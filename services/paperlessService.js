@@ -1,8 +1,6 @@
 // services/paperlessService.js
 const axios = require('axios');
 const config = require('../config/config');
-const fs = require('fs');
-const path = require('path');
 const { parse, isValid, parseISO, format } = require('date-fns');
 
 class PaperlessService {
@@ -720,30 +718,6 @@ class PaperlessService {
     return documents;
 }
 
-  async getAllDocumentIds() {
-    /**
-     * Get all Document IDs from the Paperless API.
-     * 
-     * @returns    An array of all Document IDs.
-     * @throws     An error if the request fails.
-     * @note       This method is used to get all Document IDs for further processing.
-     */
-    this.initialize();
-    try {
-      const response = await this.client.get('/documents/', {
-        params: { 
-          page,
-          page_size: 100,
-          fields: 'id',
-        }
-      });
-      return response.data.results.map(doc => doc.id);
-    } catch (error) {
-      console.error('[ERROR] fetching document IDs:', error.message);
-      return [];
-    }
-  }
-
   async getAllDocumentIdsScan() {
     /**
      * Get all Document IDs from the Paperless API.
@@ -847,23 +821,6 @@ class PaperlessService {
     }
   }
   
-  async getTagNameById(tagId) {
-    /**
-     * Get the Name of a Tag by its ID.
-     *
-     * @param   id  The id of the tag.
-     * @returns    The name of the tag.
-     */
-    this.initialize();
-    try {
-      const response = await this.client.get(`/tags/${tagId}/`);
-      return response.data.name;
-    } catch (error) {
-      console.error(`[ERROR] fetching tag name for ID ${tagId}:`, error.message);
-      return null;
-    }
-  }
-
   async getDocumentsWithTitleTagsCorrespondentCreated () {
     /**
      * Get all documents with metadata (title, tags, correspondent, created date).
@@ -1120,55 +1077,6 @@ async searchForExistingDocumentType(documentType) {
 
   } catch (error) {
       console.error('[ERROR] while searching for existing document type:', error.message);
-      throw error;
-  }
-}
-
-async getOrCreateDocumentType(name) {
-  this.initialize();
-  
-  try {
-      // Suche nach existierendem document_type
-      const existingDocType = await this.searchForExistingDocumentType(name);
-      console.log("[DEBUG] Response Document Type Search: ", existingDocType);
-  
-      if (existingDocType) {
-          console.log(`[DEBUG] Found existing document type "${name}" with ID ${existingDocType.id}`);
-          return existingDocType;
-      }
-  
-      // Erstelle neuen document_type
-      try {
-          const createResponse = await this.client.post('/document_types/', { 
-              name: name,
-              matching_algorithm: 1, // 1 = ANY
-              match: "",  // Optional: Kann später angepasst werden
-              is_insensitive: true
-          });
-          console.log(`[DEBUG] Created new document type "${name}" with ID ${createResponse.data.id}`);
-          return createResponse.data;
-      } catch (createError) {
-          if (createError.response?.status === 400 && 
-              createError.response?.data?.error?.includes('unique constraint')) {
-            
-              // Race condition check
-              const retryResponse = await this.client.get('/document_types/', {
-                  params: { name: name }
-              });
-            
-              const justCreatedDocType = retryResponse.data.results.find(
-                  dt => dt.name.toLowerCase() === name.toLowerCase()
-              );
-            
-              if (justCreatedDocType) {
-                  console.log(`[DEBUG] Retrieved document type "${name}" after constraint error with ID ${justCreatedDocType.id}`);
-                  return justCreatedDocType;
-              }
-          }
-          throw createError;
-      }
-  } catch (error) {
-      console.error(`[ERROR] Failed to process document type "${name}":`, error.message);
       throw error;
   }
 }
