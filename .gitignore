@@ -80,6 +80,9 @@ data/custom_prompt.txt
 *.bak
 package-lock.json.bak
 
+# Claude Code project memory — machine-generated, not meant to be shared
+CLAUDE.md
+
 # Portainer-specific local files (contain real IPs / hostnames).
 # Use .env.example + docker-compose.example.yml as starting points instead.
 .env.portainer
