@@ -1,0 +1,33 @@
+# docker-compose.example.yml
+#
+# Generic example for self-building this fork. Copy to docker-compose.yml
+# and adapt to your environment.
+#
+# For Portainer users: a site-local copy (docker-compose.portainer.yml)
+# with static IPs, internal networks etc. is gitignored by default — put
+# your personal version there and it won't get committed by accident.
+
+services:
+  paperless-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: paperless-ai-hb42:latest
+    container_name: paperless-ai
+    restart: unless-stopped
+    healthcheck:
+      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/3000' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    volumes:
+      # Persistent data: SQLite, .env, OCR thumbnails
+      - paperless_ai_data:/app/data:rw
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+
+volumes:
+  paperless_ai_data:

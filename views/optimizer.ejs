@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paperless-AI · Optimizer</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body class="h-full">
+    <button id="themeToggle" class="theme-toggle">
+        <i class="fas fa-moon dark:fas fa-sun"></i>
+    </button>
+
+    <div class="layout-container">
+        <button id="mobileMenuButton" class="mobile-menu-button">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/favicon.ico" class="no-invert" alt="Paperless AI Logo" style="height: 60px;">
+                <h1 class="brand-title">Paperless-AI<small style="display: block;"><%= version %></small><small style="display: block; font-size: 0.6rem; opacity: 0.7; margin-top: 2px;">modified by HB42</small></h1>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="/dashboard" class="sidebar-link"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+                    <li><a href="/manual" class="sidebar-link"><i class="fas fa-file-alt"></i><span>Manual</span></a></li>
+                    <li><a href="/chat" class="sidebar-link"><i class="fa-solid fa-comment"></i><span>Chat</span></a></li>
+                    <li><a href="/rag" class="sidebar-link"><i class="fa-solid fa-comment"></i><span>RAG Chat</span></a></li>
+                    <li><a href="/optimizer" class="sidebar-link active"><i class="fa-solid fa-code-branch"></i><span>Optimizer</span></a></li>
+                    <li><a href="/playground" class="sidebar-link"><i class="fa-solid fa-flask-vial"></i><span>Playground</span></a></li>
+                    <li><a href="/history" class="sidebar-link"><i class="fa-solid fa-clock-rotate-left"></i><span>History</span></a></li>
+                    <li><a href="/settings" class="sidebar-link"><i class="fas fa-cog"></i><span>Settings</span></a></li>
+                    <li><a href="/logout" class="sidebar-link"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-wrapper">
+
+                <div class="material-card mb-4">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <h2 class="card-title">Entity Optimizer</h2>
+                            <p class="text-sm text-text-secondary">
+                                Findet Duplikate in Korrespondenten (und später Tags) und konsolidiert sie per LLM-Verifikation.
+                            </p>
+                        </div>
+                        <div id="providerBadge" class="text-xs px-3 py-1 rounded-full bg-bg-secondary text-text-secondary">
+                            <i class="fa-solid fa-robot mr-1"></i> <span>Provider wird geladen…</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="material-card mb-4">
+                    <div class="flex gap-2 border-b border-border-color pb-2 mb-4">
+                        <button class="tab-btn active px-4 py-2 rounded-t text-sm font-medium" data-tab="analyze">
+                            <i class="fa-solid fa-search mr-1"></i> Analyse
+                        </button>
+                        <button class="tab-btn px-4 py-2 rounded-t text-sm font-medium" data-tab="history">
+                            <i class="fa-solid fa-clock-rotate-left mr-1"></i> Verlauf
+                        </button>
+                        <button class="tab-btn px-4 py-2 rounded-t text-sm font-medium" data-tab="ignore">
+                            <i class="fa-solid fa-eye-slash mr-1"></i> Ignorier-Liste
+                        </button>
+                        <button class="tab-btn px-4 py-2 rounded-t text-sm font-medium" data-tab="maintenance">
+                            <i class="fa-solid fa-screwdriver-wrench mr-1"></i> Wartung
+                        </button>
+                    </div>
+
+                    <!-- ANALYZE TAB -->
+                    <section id="tab-analyze" class="tab-panel">
+                        <div class="flex flex-wrap gap-4 items-end mb-4">
+                            <div>
+                                <label class="block text-xs text-text-secondary mb-1">Entity-Typ</label>
+                                <select id="entityType" class="rounded-md border-border-color bg-bg-primary text-text-primary p-2">
+                                    <option value="correspondent" selected>Korrespondenten</option>
+                                    <option value="tag">Tags</option>
+                                    <option value="document_type">Dokumenttypen</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-text-secondary mb-1">Ähnlichkeits-Schwelle</label>
+                                <input id="threshold" type="number" min="0.5" max="1" step="0.01" value="0.85"
+                                    class="rounded-md border-border-color bg-bg-primary text-text-primary p-2 w-24">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-text-secondary mb-1">Min. Dokumente</label>
+                                <input id="minDocuments" type="number" min="0" value="0"
+                                    class="rounded-md border-border-color bg-bg-primary text-text-primary p-2 w-24">
+                            </div>
+                            <div class="flex items-center">
+                                <label class="inline-flex items-center">
+                                    <input id="useLlm" type="checkbox" checked class="mr-2">
+                                    <span class="text-sm">LLM-Verifikation verwenden</span>
+                                </label>
+                            </div>
+                            <button id="runAnalysis" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-medium">
+                                <i class="fa-solid fa-play mr-1"></i> Analyse starten
+                            </button>
+                            <button id="loadCached" class="px-4 py-2 rounded-md border border-border-color text-text-primary">
+                                <i class="fa-solid fa-database mr-1"></i> Letztes Ergebnis laden
+                            </button>
+                        </div>
+
+                        <div id="analysisStatus" class="hidden mb-4 p-3 rounded-md bg-bg-secondary text-sm"></div>
+
+                        <div id="clustersContainer" class="space-y-4"></div>
+                    </section>
+
+                    <!-- HISTORY TAB -->
+                    <section id="tab-history" class="tab-panel hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Merge-Verlauf</h3>
+                            <button id="refreshHistory" class="px-3 py-1 rounded-md border border-border-color text-sm">
+                                <i class="fa-solid fa-arrows-rotate"></i> Aktualisieren
+                            </button>
+                        </div>
+                        <div id="historyContainer" class="space-y-3"></div>
+                    </section>
+
+                    <!-- MAINTENANCE TAB -->
+                    <section id="tab-maintenance" class="tab-panel hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Wartung &amp; Reset</h3>
+                            <button id="refreshMaintenance" class="px-3 py-1 rounded-md border border-border-color text-sm">
+                                <i class="fa-solid fa-arrows-rotate"></i> Aktualisieren
+                            </button>
+                        </div>
+
+                        <div id="maintenanceStatus" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="border border-border-color rounded-lg p-4">
+                                <h4 class="font-semibold mb-2"><i class="fa-solid fa-database mr-1"></i> Paperless-NGX</h4>
+                                <div class="text-sm text-text-secondary">Lade…</div>
+                            </div>
+                            <div class="border border-border-color rounded-lg p-4">
+                                <h4 class="font-semibold mb-2"><i class="fa-solid fa-robot mr-1"></i> Paperless-AI Tracking</h4>
+                                <div class="text-sm text-text-secondary">Lade…</div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="border border-yellow-400 bg-yellow-50 rounded-lg p-4">
+                                <h4 class="font-semibold mb-1"><i class="fa-solid fa-broom mr-1"></i> Waisen aufräumen</h4>
+                                <p class="text-sm mb-3">
+                                    Entfernt interne Tracking-Einträge für Dokumente, die in Paperless-NGX gelöscht wurden, aber
+                                    in der Paperless-AI-Datenbank noch stehen. Löst oft die "negative unprocessed"-Anzeige.
+                                    <strong>Keine Daten in Paperless-NGX werden verändert.</strong>
+                                </p>
+                                <button id="pruneOrphansBtn" class="px-4 py-2 rounded-md bg-yellow-500 hover:bg-yellow-600 text-white font-medium">
+                                    Waisen-Cleanup starten
+                                </button>
+                                <div id="pruneOrphansResult" class="mt-3 text-sm"></div>
+                            </div>
+
+<div class="border border-purple-400 bg-purple-50 rounded-lg p-4">
+                                <h4 class="font-semibold mb-1"><i class="fa-solid fa-broom mr-1"></i> Tag-Bestand komplett bereinigen</h4>
+                                <p class="text-sm mb-3">
+                                    Wichtig zu wissen: Paperless-AI <strong>ergänzt</strong> Tags beim Scan, es <strong>ersetzt</strong> sie nicht.
+                                    Bei großen Tag-Beständen (&gt;500) mit AI-Drift ist ein kompletter Reset vor dem Re-Scan oft sauberer
+                                    als Mergen. Der Re-Scan erstellt die Tag-Taxonomie dann von Grund auf neu.
+                                </p>
+                                <div class="flex gap-2 flex-wrap mb-3">
+                                    <button id="tagStatsBtn" class="px-4 py-2 rounded-md border border-purple-400 text-purple-800 bg-white hover:bg-purple-100 font-medium">
+                                        <i class="fa-solid fa-chart-bar mr-1"></i> Tag-Statistik anzeigen
+                                    </button>
+                                </div>
+                                <div id="tagStatsBox" class="mb-3"></div>
+
+                                <div class="space-y-3">
+                                    <div class="border border-purple-200 bg-white rounded p-3">
+                                        <div class="font-semibold text-sm mb-1">Option A: Nur verwaiste Tags löschen (risikolos)</div>
+                                        <p class="text-xs mb-2">Löscht Tags, die keinem einzigen Dokument zugeordnet sind. Räumt typisch 30-50% eines gedrifteten Bestands auf ohne Dokumenten-Daten zu verändern.</p>
+                                        <button id="deleteOrphanTagsBtn" class="px-3 py-1 rounded-md bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium">
+                                            Verwaiste Tags löschen
+                                        </button>
+                                        <div id="deleteOrphanTagsResult" class="mt-2 text-sm"></div>
+                                    </div>
+
+                                    <div class="border border-red-300 bg-red-50 rounded p-3">
+                                        <div class="font-semibold text-sm mb-1 text-red-800">Option B: ALLE Tags wipen (nicht umkehrbar)</div>
+                                        <p class="text-xs mb-2">
+                                            Entfernt alle Tags von allen Dokumenten. Der Tag <code>ai-processed</code> wird standardmäßig geschützt.
+                                            Weitere Tags, die du behalten willst, kommagetrennt eintragen.
+                                            Ein JSON-Backup aller Tag-Zuweisungen wird ins Container-Log geschrieben — bei Bedarf kann man es wiederherstellen.
+                                        </p>
+                                        <div class="flex gap-2 items-end flex-wrap mb-2">
+                                            <div class="flex-1 min-w-60">
+                                                <label class="block text-xs text-text-secondary mb-1">Tags schützen (kommagetrennt)</label>
+                                                <input id="wipePreserveNames" type="text" placeholder="ai-processed, Wichtig, Archiv"
+                                                    class="w-full rounded-md border-border-color bg-white text-text-primary p-2 text-sm">
+                                            </div>
+                                            <label class="inline-flex items-center text-xs">
+                                                <input id="wipeDeleteDefs" type="checkbox" class="mr-2">
+                                                Tag-Definitionen auch löschen
+                                            </label>
+                                        </div>
+                                        <button id="wipeAllTagsBtn" class="px-3 py-1 rounded-md bg-red-700 hover:bg-red-800 text-white text-sm font-medium">
+                                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> ALLE Tags wipen
+                                        </button>
+                                        <div id="wipeAllTagsResult" class="mt-2 text-sm"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-indigo-400 bg-indigo-50 rounded-lg p-4">
+                                <h4 class="font-semibold mb-1"><i class="fa-solid fa-file-lines mr-1"></i> Dokumenttypen bereinigen</h4>
+                                <p class="text-sm mb-3">
+                                    Dokumenttypen (z.B. <code>Rechnung</code>, <code>Vertrag</code>, <code>Kontoauszug</code>) sind 1:1 pro Dokument.
+                                    Wenn der Prompt eine geschlossene Liste vorgibt, bleibt der Bestand klein und sauber.
+                                    Hier kannst du verwaiste Typen entfernen oder alle Typen wipen um sie via Re-Scan neu zu setzen.
+                                </p>
+                                <div class="flex gap-2 flex-wrap mb-3">
+                                    <button id="docTypeStatsBtn" class="px-4 py-2 rounded-md border border-indigo-400 text-indigo-800 bg-white hover:bg-indigo-100 font-medium">
+                                        <i class="fa-solid fa-chart-bar mr-1"></i> Dokumenttyp-Statistik
+                                    </button>
+                                </div>
+                                <div id="docTypeStatsBox" class="mb-3"></div>
+
+                                <div class="space-y-3">
+                                    <div class="border border-indigo-200 bg-white rounded p-3">
+                                        <div class="font-semibold text-sm mb-1">Option A: Verwaiste Dokumenttypen löschen (risikolos)</div>
+                                        <p class="text-xs mb-2">Löscht Typen ohne Dokumentzuordnung. Dokumente werden nicht verändert.</p>
+                                        <button id="deleteOrphanDocTypesBtn" class="px-3 py-1 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium">
+                                            Verwaiste Dokumenttypen löschen
+                                        </button>
+                                        <div id="deleteOrphanDocTypesResult" class="mt-2 text-sm"></div>
+                                    </div>
+
+                                    <div class="border border-red-300 bg-red-50 rounded p-3">
+                                        <div class="font-semibold text-sm mb-1 text-red-800">Option B: ALLE Dokumenttypen wipen</div>
+                                        <p class="text-xs mb-2">
+                                            Setzt <code>document_type = null</code> auf allen Dokumenten, optional werden die Typ-Definitionen gelöscht.
+                                            Der Re-Scan weist dann saubere Typen aus der geschlossenen Prompt-Liste zu.
+                                            JSON-Backup geht ins Container-Log.
+                                        </p>
+                                        <div class="flex gap-2 items-end flex-wrap mb-2">
+                                            <div class="flex-1 min-w-60">
+                                                <label class="block text-xs text-text-secondary mb-1">Typen schützen (kommagetrennt)</label>
+                                                <input id="wipeDocTypePreserve" type="text" placeholder="Optional: Namen erhalten"
+                                                    class="w-full rounded-md border-border-color bg-white text-text-primary p-2 text-sm">
+                                            </div>
+                                            <label class="inline-flex items-center text-xs">
+                                                <input id="wipeDocTypeDeleteDefs" type="checkbox" class="mr-2">
+                                                Typ-Definitionen auch löschen
+                                            </label>
+                                        </div>
+                                        <button id="wipeAllDocTypesBtn" class="px-3 py-1 rounded-md bg-red-700 hover:bg-red-800 text-white text-sm font-medium">
+                                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> ALLE Dokumenttypen wipen
+                                        </button>
+                                        <div id="wipeAllDocTypesResult" class="mt-2 text-sm"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-red-400 bg-red-50 rounded-lg p-4">
+                                <h4 class="font-semibold mb-1"><i class="fa-solid fa-rotate-right mr-1"></i> Tracking komplett zurücksetzen</h4>
+                                <p class="text-sm mb-3">
+                                    Leert die Tabelle der bereits verarbeiteten Dokumente. Beim nächsten Paperless-AI-Scan werden
+                                    ALLE Dokumente als unprozessiert erkannt und mit dem aktuellen Custom Prompt neu analysiert.
+                                    Die Verlaufs-History und Original-Daten bleiben erhalten.
+                                </p>
+                                <p class="text-sm mb-3">
+                                    <strong>Empfohlen nach:</strong> Änderung des Custom Prompts, Änderung der AI-Provider-Einstellungen,
+                                    oder wenn die Counter aus dem Ruder gelaufen sind.
+                                </p>
+                                <p class="text-sm mb-3 text-red-700">
+                                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                    LLM-Kosten: bei ~3000 Dokumenten etwa $0.50–$2 je nach Modell.
+                                </p>
+                                <button id="resetTrackingBtn" class="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white font-medium">
+                                    Tracking zurücksetzen
+                                </button>
+                                <div id="resetTrackingResult" class="mt-3 text-sm"></div>
+                            </div>
+
+                            <div class="border border-green-400 bg-green-50 rounded-lg p-4">
+                                <h4 class="font-semibold mb-1"><i class="fa-solid fa-folder-tree mr-1"></i> Saved Views für Steuerjahr anlegen</h4>
+                                <p class="text-sm mb-3">
+                                    Legt in Paperless-NGX 9 gespeicherte Ansichten für ein Steuerjahr an (eine pro Kategorie + eine Sammel-Ansicht).
+                                    Diese erscheinen in der Paperless-NGX-Sidebar und sind ideal als Arbeitsansichten für dich und deinen Steuerberater.
+                                    Bereits existierende Views werden übersprungen (idempotent).
+                                </p>
+                                <p class="text-sm mb-3 text-text-secondary">
+                                    Es werden nur Views für Kategorien angelegt, deren Tag (z.B. "Werbungskosten 2024") schon mindestens einmal
+                                    vergeben wurde. Leere Kategorien werden übersprungen – führe ggf. erst den Re-Scan durch.
+                                </p>
+                                <div class="flex gap-2 items-end flex-wrap mb-3">
+                                    <div>
+                                        <label class="block text-xs text-text-secondary mb-1">Steuerjahr</label>
+                                        <input id="taxViewYear" type="number" min="2000" max="2099" step="1"
+                                            class="rounded-md border-border-color bg-white text-text-primary p-2 w-28" />
+                                    </div>
+                                    <label class="inline-flex items-center text-sm">
+                                        <input id="taxViewDashboard" type="checkbox" class="mr-2">
+                                        Auch im Dashboard-Widget anzeigen
+                                    </label>
+                                </div>
+                                <button id="createTaxViewsBtn" class="px-4 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white font-medium">
+                                    <i class="fa-solid fa-plus mr-1"></i> Views anlegen
+                                </button>
+                                <div id="createTaxViewsResult" class="mt-3 text-sm"></div>
+                            </div>
+
+                            <div class="border border-blue-400 bg-blue-50 rounded-lg p-4">
+                                <h4 class="font-semibold mb-1"><i class="fa-solid fa-bolt mr-1"></i> Sync-Check jetzt ausführen</h4>
+                                <p class="text-sm mb-3">
+                                    Lässt den Optimizer sofort einmalig über Korrespondenten UND Tags laufen und aktualisiert den
+                                    Badge-Zähler. Läuft sonst automatisch alle 12 Stunden.
+                                </p>
+                                <button id="syncRunBtn" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-medium">
+                                    Sync-Check ausführen
+                                </button>
+                                <div id="syncRunResult" class="mt-3 text-sm"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- IGNORE TAB -->
+                    <section id="tab-ignore" class="tab-panel hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Ignorierte Paare</h3>
+                            <button id="refreshIgnores" class="px-3 py-1 rounded-md border border-border-color text-sm">
+                                <i class="fa-solid fa-arrows-rotate"></i> Aktualisieren
+                            </button>
+                        </div>
+                        <p class="text-sm text-text-secondary mb-4">
+                            Diese Entitäten-Paare werden in zukünftigen Analysen nicht mehr vorgeschlagen.
+                            Klicke "Entfernen", um ein Paar wieder zur Bewertung freizugeben.
+                        </p>
+                        <div id="ignoreContainer" class="space-y-2"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast area -->
+    <div id="toastArea" class="fixed bottom-6 right-6 z-50 space-y-2"></div>
+
+    <script src="/js/optimizer.js"></script>
+</body>
+</html>

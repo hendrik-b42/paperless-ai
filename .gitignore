@@ -1,0 +1,86 @@
+# ==========================================================================
+# Upstream gitignore (clusterzx/paperless-ai) — kept verbatim
+# ==========================================================================
+.env
+.env.bak
+.dockerignore
+data/
+node_modules/
+api-test.ps1
+openai_debug.log
+prompt.bak
+data bak/
+data_bak/
+data_*/
+.env*
+docker-compose-dev.yml
+public/images/
+delete_all.js
+documents.json
+apitest.js
+logs/*
+api_correspondent.js
+prompt.txt
+api_test_r1.js
+openrouter.js
+/chromadb
+rag_config.conf
+indexed.conf
+indexing_complete.flag
+RAGZ_README.md
+
+# Local development files
+.local/
+*.local.*
+/chromadb
+/chromadb/*
+rag_config.conf
+indexed.conf
+main.py.bak
+indexing_complete.flag
+__pycache__/
+main.pyy*
+rag.ejs.old
+surya_env/
+ocr_server.py
+surya_models.py
+
+# ==========================================================================
+# Additions for this fork
+# ==========================================================================
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Test / build outputs
+coverage/
+.nyc_output/
+dist/
+build/
+
+# Docker local/private overrides (with real IPs / hostnames)
+docker-compose.local.yml
+docker-compose.override.yml
+docker-compose.portainer.yml
+
+# Personal deploy docs (with real IPs / hostnames)
+DEPLOY-PORTAINER.md
+
+# Private custom prompt with household-specific context.
+# Ship the generic CUSTOM_PROMPT_TEMPLATE.md instead.
+CUSTOM_PROMPT_PRIVATE.md
+data/custom_prompt.txt
+
+# Backup files
+*.bak
+package-lock.json.bak
+
+# Portainer-specific local files (contain real IPs / hostnames).
+# Use .env.example + docker-compose.example.yml as starting points instead.
+.env.portainer
+.env.portainer.example
