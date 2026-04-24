@@ -27,12 +27,10 @@ ENV PATH="/app/venv/bin:$PATH"
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # Copy package files for dependency installation
-COPY package.json ./
+COPY package.json package-lock.json ./
 
-# Install node dependencies.
-# Upstream hatte "npm ci --only=production", aber (a) keine gültige package-lock.json
-# im Repo (nur eine .bak), und (b) --only=production ist deprecated. Deshalb:
-RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
+# Install node dependencies from the locked manifest — reproducible builds.
+RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 
 # Copy application source code
 COPY . .
