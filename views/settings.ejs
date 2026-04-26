@@ -337,9 +337,20 @@
                                 <!-- Custom Provider Settings -->
                                 <div id="customSettings" class="space-y-4">
                                     <div class="space-y-2">
+                                        <label for="customPreset" class="text-sm font-medium">Preset</label>
+                                        <select id="customPreset" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="manual">Manual configuration</option>
+                                            <option value="perplexity">Perplexity (sonar)</option>
+                                            <option value="deepseek">DeepSeek</option>
+                                            <option value="moonshot">Moonshot / Kimi</option>
+                                        </select>
+                                        <p class="text-sm text-gray-500">Wählt eine Vorlage und füllt Base URL + Model — API-Key trägst du selbst ein.</p>
+                                    </div>
+
+                                    <div class="space-y-2">
                                         <label for="customBaseUrl" class="text-sm font-medium">Base URL</label>
-                                        <input type="text" 
-                                            id="customBaseUrl" 
+                                        <input type="text"
+                                            id="customBaseUrl"
                                             name="customBaseUrl"
                                             value="<%= config.CUSTOM_BASE_URL %>"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -362,13 +373,36 @@
 
                                     <div class="space-y-2">
                                         <label for="customModel" class="text-sm font-medium">Model</label>
-                                        <input type="text" 
-                                            id="customModel" 
+                                        <input type="text"
+                                            id="customModel"
                                             name="customModel"
                                             value="<%= config.CUSTOM_MODEL %>"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                             placeholder="Enter model name">
                                     </div>
+                                    <script>
+                                      (function () {
+                                        const PRESETS = {
+                                          perplexity: { url: 'https://api.perplexity.ai',     model: 'sonar' },
+                                          deepseek:   { url: 'https://api.deepseek.com/v1',   model: 'deepseek-chat' },
+                                          moonshot:   { url: 'https://api.moonshot.cn/v1',    model: 'moonshot-v1-128k' }
+                                        };
+                                        const sel  = document.getElementById('customPreset');
+                                        const url  = document.getElementById('customBaseUrl');
+                                        const mod  = document.getElementById('customModel');
+                                        if (!sel || !url || !mod) return;
+                                        // Auto-detect on load: if the saved URL matches a preset, pre-select it.
+                                        for (const [k, v] of Object.entries(PRESETS)) {
+                                          if (url.value && url.value.replace(/\/$/, '') === v.url) { sel.value = k; break; }
+                                        }
+                                        sel.addEventListener('change', () => {
+                                          const p = PRESETS[sel.value];
+                                          if (!p) return;
+                                          url.value = p.url;
+                                          mod.value = p.model;
+                                        });
+                                      })();
+                                    </script>
                                 </div>
 
                                 <!-- Azure Settings -->

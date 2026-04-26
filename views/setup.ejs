@@ -268,20 +268,30 @@
                                     <!-- Custom Provider Settings -->
                                     <div id="customSettings" class="provider-settings">
                                         <div class="form-group">
+                                            <label for="customPreset">Preset</label>
+                                            <select id="customPreset" class="modern-input">
+                                                <option value="manual">Manual configuration</option>
+                                                <option value="perplexity">Perplexity (sonar)</option>
+                                                <option value="deepseek">DeepSeek</option>
+                                                <option value="moonshot">Moonshot / Kimi</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
                                             <label for="customBaseUrl">Base URL</label>
-                                            <input type="text" 
-                                                   id="customBaseUrl" 
+                                            <input type="text"
+                                                   id="customBaseUrl"
                                                    name="customBaseUrl"
                                                    value="<%= config.CUSTOM_BASE_URL %>"
                                                    class="modern-input"
                                                    placeholder="https://api.example.com">
                                         </div>
-                                        
+
                                         <div class="form-group">
                                             <label for="customApiKey">API Key</label>
                                             <div class="password-input">
-                                                <input type="password" 
-                                                       id="customApiKey" 
+                                                <input type="password"
+                                                       id="customApiKey"
                                                        name="customApiKey"
                                                        value="<%= config.CUSTOM_API_KEY %>"
                                                        class="modern-input">
@@ -290,16 +300,38 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="form-group">
                                             <label for="customModel">Model</label>
-                                            <input type="text" 
-                                                   id="customModel" 
+                                            <input type="text"
+                                                   id="customModel"
                                                    name="customModel"
                                                    value="<%= config.CUSTOM_MODEL %>"
                                                    class="modern-input"
                                                    placeholder="Enter model name">
                                         </div>
+                                        <script>
+                                          (function () {
+                                            const PRESETS = {
+                                              perplexity: { url: 'https://api.perplexity.ai',     model: 'sonar' },
+                                              deepseek:   { url: 'https://api.deepseek.com/v1',   model: 'deepseek-chat' },
+                                              moonshot:   { url: 'https://api.moonshot.cn/v1',    model: 'moonshot-v1-128k' }
+                                            };
+                                            const sel  = document.getElementById('customPreset');
+                                            const url  = document.getElementById('customBaseUrl');
+                                            const mod  = document.getElementById('customModel');
+                                            if (!sel || !url || !mod) return;
+                                            for (const [k, v] of Object.entries(PRESETS)) {
+                                              if (url.value && url.value.replace(/\/$/, '') === v.url) { sel.value = k; break; }
+                                            }
+                                            sel.addEventListener('change', () => {
+                                              const p = PRESETS[sel.value];
+                                              if (!p) return;
+                                              url.value = p.url;
+                                              mod.value = p.model;
+                                            });
+                                          })();
+                                        </script>
                                     </div>
 
                                     

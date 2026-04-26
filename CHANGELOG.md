@@ -245,6 +245,25 @@ active for **all** providers. Previously they were OpenAI-only — Custom
 and Azure (which were 95 % copies of `openaiService`) had silently drifted
 out of sync. The consolidation propagates the fix.
 
+### Custom-provider presets in the UI
+
+Both the setup wizard and the settings page now offer a preset dropdown
+inside the "Custom" provider block. Picking a preset auto-fills Base URL
+and Model; the user only needs to paste their API key. Auto-detect on
+load: when the saved Base URL matches a known preset, the dropdown
+pre-selects it.
+
+Presets:
+- **Perplexity** — `https://api.perplexity.ai` / `sonar`
+- **DeepSeek** — `https://api.deepseek.com/v1` / `deepseek-chat`
+- **Moonshot / Kimi** — `https://api.moonshot.cn/v1` / `moonshot-v1-128k`
+- **Manual configuration** (default — leaves the fields untouched)
+
+Pure UI helper; the saved state is the same `CUSTOM_BASE_URL` +
+`CUSTOM_MODEL` env vars as before. No backend changes. Perplexity stays
+available as a dedicated Optimizer provider as well
+(`OPTIMIZER_AI_PROVIDER=perplexity`) — the two paths are independent.
+
 ## Bugfixes
 
 ### Dockerfile: `npm ci` fails because no valid lockfile
