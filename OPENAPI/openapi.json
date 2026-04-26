@@ -827,109 +827,13 @@
         }
       }
     },
-    "/sampleData/{id}": {
-      "get": {
-        "summary": "Get sample data for a document",
-        "description": "Retrieves sample data extracted from a document, including processed text content\nand any metadata that has been extracted or processed by the AI.\n\nThis endpoint is commonly used for previewing document data in the UI before\ncompleting document processing or updating metadata.\n",
+    "/api/key-regenerate": {
+      "post": {
+        "summary": "Regenerate API key",
+        "description": "Generates a new random API key for the application and updates the .env file.\nThe previous API key will be invalidated immediately after generation.\n\nThis API key can be used for programmatic access to the API endpoints\nby sending it in the `x-api-key` header of subsequent requests.\n\n**Security Notice**: This operation invalidates any existing API key.\nAll systems using the previous key will need to be updated.\n",
         "tags": [
-          "Documents",
-          "API"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "Document ID to retrieve sample data for",
-            "example": 123
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Document sample data retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "content": {
-                      "type": "string",
-                      "description": "Extracted text content from the document",
-                      "example": "Invoice from Acme Corp. Total amount: $125.00, Due date: 2023-08-15"
-                    },
-                    "metadata": {
-                      "type": "object",
-                      "description": "Any metadata that has been extracted from the document",
-                      "properties": {
-                        "title": {
-                          "type": "string",
-                          "example": "Acme Corp Invoice - August 2023"
-                        },
-                        "tags": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "example": [
-                            "Invoice",
-                            "Finance"
-                          ]
-                        },
-                        "correspondent": {
-                          "type": "string",
-                          "example": "Acme Corp"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Document not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Document not found"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/playground": {
-      "get": {
-        "summary": "AI playground testing environment",
-        "description": "Renders the AI playground page for experimenting with document analysis.\n\nThis interactive environment allows users to test different AI providers and prompts\non document content without affecting the actual document processing workflow.\nUsers can paste document text, customize prompts, and see raw AI responses\nto better understand how the AI models analyze document content.\n\nThe playground is useful for fine-tuning prompts and testing AI capabilities\nbefore applying them to actual document processing.\n",
-        "tags": [
-          "Navigation",
-          "Documents"
+          "System",
+          "Authentication"
         ],
         "security": [
           {
@@ -938,23 +842,34 @@
         ],
         "responses": {
           "200": {
-            "description": "Playground page rendered successfully",
+            "description": "API key regenerated successfully",
             "content": {
-              "text/html": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "description": "HTML content of the AI playground interface"
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "string",
+                      "description": "The newly generated API key",
+                      "example": "3f7a8d6e2c1b5a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5"
+                    }
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized - user not authenticated",
-            "headers": {
-              "Location": {
+            "description": "Unauthorized - JWT authentication required",
+            "content": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "example": "/login"
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Authentication required"
+                    }
+                  }
                 }
               }
             }
@@ -964,73 +879,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/thumb/{documentId}": {
-      "get": {
-        "summary": "Get document thumbnail",
-        "description": "Retrieves the thumbnail image for a specific document from the Paperless-ngx system.\nThis endpoint proxies the request to the Paperless-ngx API and returns the thumbnail\nimage for display in the UI.\n\nThe thumbnail is returned as an image file in the format provided by Paperless-ngx,\ntypically JPEG or PNG.\n",
-        "tags": [
-          "Documents",
-          "API"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "documentId",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "ID of the document to retrieve thumbnail for",
-            "example": 123
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Thumbnail retrieved successfully",
-            "content": {
-              "image/*": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Document or thumbnail not found",
-            "content": {
-              "application/json": {
-                "schema": {
                   "type": "object",
                   "properties": {
                     "error": {
                       "type": "string",
-                      "example": "Thumbnail not found"
+                      "example": "Error regenerating API key"
                     }
                   }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error or Paperless-ngx connection failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -1456,6 +1311,840 @@
         }
       }
     },
+    "/playground": {
+      "get": {
+        "summary": "AI playground testing environment",
+        "description": "Renders the AI playground page for experimenting with document analysis.\n\nThis interactive environment allows users to test different AI providers and prompts\non document content without affecting the actual document processing workflow.\nUsers can paste document text, customize prompts, and see raw AI responses\nto better understand how the AI models analyze document content.\n\nThe playground is useful for fine-tuning prompts and testing AI capabilities\nbefore applying them to actual document processing.\n",
+        "tags": [
+          "Navigation",
+          "Documents"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Playground page rendered successfully",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML content of the AI playground interface"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - user not authenticated",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "example": "/login"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "summary": "Main dashboard page",
+        "description": "Renders the main dashboard page of the application with summary statistics and visualizations.\nThe dashboard provides an overview of processed documents, system metrics, and important statistics\nabout document processing including tag counts, correspondent counts, and token usage.\n\nThe page displays visualizations for document processing status, token distribution,\nprocessing time statistics, and document type categorization to help administrators\nunderstand system performance and document processing patterns.\n",
+        "tags": [
+          "Navigation",
+          "System"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard page rendered successfully",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML content of the dashboard page"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - user not authenticated",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "example": "/login"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/debug": {
+      "get": {
+        "summary": "Debug interface",
+        "description": "Renders a debug interface for testing and troubleshooting Paperless-ngx connections\nand API responses.\n\nThis page provides a simple UI for executing API calls to Paperless-ngx endpoints\nand viewing the raw responses. It's primarily used for diagnosing connection issues\nand understanding the structure of data returned by the Paperless-ngx API.\n\nThe debug interface should only be accessible to administrators and is not intended\nfor regular use in production environments.\n",
+        "tags": [
+          "Navigation",
+          "System"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Debug interface rendered successfully",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML content of the debug interface"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - user not authenticated",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "example": "/login"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/debug/tags": {
+      "get": {
+        "summary": "Debug tags API",
+        "description": "Returns the raw tags data from Paperless-ngx for debugging purposes.\n\nThis endpoint performs a direct API call to the Paperless-ngx tags endpoint\nand returns the unmodified response. It's used for diagnosing tag-related issues\nand verifying proper connection to Paperless-ngx.\n",
+        "tags": [
+          "System",
+          "API",
+          "Metadata"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tags data retrieved successfully from Paperless-ngx",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Raw response from Paperless-ngx tags API"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - user not authenticated",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "example": "/login"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error or Paperless connection error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/debug/documents": {
+      "get": {
+        "summary": "Debug documents API",
+        "description": "Returns the raw documents data from Paperless-ngx for debugging purposes.\n\nThis endpoint performs a direct API call to the Paperless-ngx documents endpoint\nand returns the unmodified response. It's used for diagnosing document-related issues\nand verifying proper connection to Paperless-ngx.\n",
+        "tags": [
+          "System",
+          "API",
+          "Documents"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documents data retrieved successfully from Paperless-ngx",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Raw response from Paperless-ngx documents API"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - user not authenticated",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "example": "/login"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error or Paperless connection error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/debug/correspondents": {
+      "get": {
+        "summary": "Debug correspondents API",
+        "description": "Returns the raw correspondents data from Paperless-ngx for debugging purposes.\n\nThis endpoint performs a direct API call to the Paperless-ngx correspondents endpoint\nand returns the unmodified response. It's used for diagnosing correspondent-related issues\nand verifying proper connection to Paperless-ngx.\n",
+        "tags": [
+          "System",
+          "API",
+          "Metadata"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Correspondents data retrieved successfully from Paperless-ngx",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Raw response from Paperless-ngx correspondents API"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - user not authenticated",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "example": "/login"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error or Paperless connection error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sampleData/{id}": {
+      "get": {
+        "summary": "Get sample data for a document",
+        "description": "Retrieves sample data extracted from a document, including processed text content\nand any metadata that has been extracted or processed by the AI.\n\nThis endpoint is commonly used for previewing document data in the UI before\ncompleting document processing or updating metadata.\n",
+        "tags": [
+          "Documents",
+          "API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Document ID to retrieve sample data for",
+            "example": 123
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document sample data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "content": {
+                      "type": "string",
+                      "description": "Extracted text content from the document",
+                      "example": "Invoice from Acme Corp. Total amount: $125.00, Due date: 2023-08-15"
+                    },
+                    "metadata": {
+                      "type": "object",
+                      "description": "Any metadata that has been extracted from the document",
+                      "properties": {
+                        "title": {
+                          "type": "string",
+                          "example": "Acme Corp Invoice - August 2023"
+                        },
+                        "tags": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "example": [
+                            "Invoice",
+                            "Finance"
+                          ]
+                        },
+                        "correspondent": {
+                          "type": "string",
+                          "example": "Acme Corp"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Document not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/thumb/{documentId}": {
+      "get": {
+        "summary": "Get document thumbnail",
+        "description": "Retrieves the thumbnail image for a specific document from the Paperless-ngx system.\nThis endpoint proxies the request to the Paperless-ngx API and returns the thumbnail\nimage for display in the UI.\n\nThe thumbnail is returned as an image file in the format provided by Paperless-ngx,\ntypically JPEG or PNG.\n",
+        "tags": [
+          "Documents",
+          "API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "documentId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the document to retrieve thumbnail for",
+            "example": 123
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thumbnail retrieved successfully",
+            "content": {
+              "image/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document or thumbnail not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Thumbnail not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error or Paperless-ngx connection failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reset-all-documents": {
+      "post": {
+        "summary": "Reset all processed documents",
+        "description": "Deletes all processing records from the database, allowing documents to be processed again.\nThis doesn't delete the actual documents from Paperless-ngx, only their processing status in Paperless-AI.\n\nThis operation can be useful when changing AI models or prompts, as it allows reprocessing\nall documents with the updated configuration.\n",
+        "tags": [
+          "Documents",
+          "API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All documents successfully reset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Authentication required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Error resetting documents"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reset-documents": {
+      "post": {
+        "summary": "Reset specific documents",
+        "description": "Deletes processing records for specific documents, allowing them to be processed again.\nThis doesn't delete the actual documents from Paperless-ngx, only their processing status in Paperless-AI.\n\nThis operation is useful when you want to reprocess only selected documents after changes to\nthe AI model, prompt, or document metadata configuration.\n",
+        "tags": [
+          "Documents",
+          "API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "ids"
+                ],
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "description": "Array of document IDs to reset",
+                    "example": [
+                      123,
+                      456,
+                      789
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documents successfully reset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid document IDs"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Authentication required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Error resetting documents"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scan/now": {
+      "post": {
+        "summary": "Trigger immediate document scan",
+        "description": "Initiates an immediate scan of documents in Paperless-ngx that haven't been processed yet.\nThis endpoint can be used to manually trigger processing without waiting for the scheduled interval.\n\nThe scan will:\n- Connect to Paperless-ngx API\n- Fetch all unprocessed documents\n- Process each document with the configured AI service\n- Update documents in Paperless-ngx with generated metadata\n\nThe process respects the function limitations set in the configuration.\n",
+        "tags": [
+          "Documents",
+          "API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scan initiated successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Task completed"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Authentication required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Error during document scan"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/webhook/document": {
+      "post": {
+        "summary": "Webhook for document updates",
+        "description": "Processes incoming webhook notifications from Paperless-ngx about document\nchanges, additions, or deletions. The webhook allows Paperless-AI to respond\nto document changes in real-time.\n\nWhen a new document is added or updated in Paperless-ngx, this endpoint can\ntrigger automatic AI processing for metadata extraction.\n",
+        "tags": [
+          "Documents",
+          "API",
+          "System"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "event_type",
+                  "document_id"
+                ],
+                "properties": {
+                  "event_type": {
+                    "type": "string",
+                    "description": "Type of event that occurred",
+                    "enum": [
+                      "added",
+                      "updated",
+                      "deleted"
+                    ],
+                    "example": "added"
+                  },
+                  "document_id": {
+                    "type": "integer",
+                    "description": "ID of the affected document",
+                    "example": 123
+                  },
+                  "document_info": {
+                    "type": "object",
+                    "description": "Additional information about the document (optional)",
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "example": "Invoice"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Document event processed"
+                    },
+                    "processing_queued": {
+                      "type": "boolean",
+                      "description": "Whether AI processing was queued for this document",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid webhook payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Missing required fields: event_type, document_id"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unauthorized: Invalid API key"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error processing webhook",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/history": {
       "get": {
         "summary": "Document history page",
@@ -1721,598 +2410,6 @@
         }
       }
     },
-    "/api/reset-all-documents": {
-      "post": {
-        "summary": "Reset all processed documents",
-        "description": "Deletes all processing records from the database, allowing documents to be processed again.\nThis doesn't delete the actual documents from Paperless-ngx, only their processing status in Paperless-AI.\n\nThis operation can be useful when changing AI models or prompts, as it allows reprocessing\nall documents with the updated configuration.\n",
-        "tags": [
-          "Documents",
-          "API"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          },
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "All documents successfully reset",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Authentication required"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Error resetting documents"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/reset-documents": {
-      "post": {
-        "summary": "Reset specific documents",
-        "description": "Deletes processing records for specific documents, allowing them to be processed again.\nThis doesn't delete the actual documents from Paperless-ngx, only their processing status in Paperless-AI.\n\nThis operation is useful when you want to reprocess only selected documents after changes to\nthe AI model, prompt, or document metadata configuration.\n",
-        "tags": [
-          "Documents",
-          "API"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          },
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "ids"
-                ],
-                "properties": {
-                  "ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "integer"
-                    },
-                    "description": "Array of document IDs to reset",
-                    "example": [
-                      123,
-                      456,
-                      789
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Documents successfully reset",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Invalid document IDs"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Authentication required"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Error resetting documents"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/scan/now": {
-      "post": {
-        "summary": "Trigger immediate document scan",
-        "description": "Initiates an immediate scan of documents in Paperless-ngx that haven't been processed yet.\nThis endpoint can be used to manually trigger processing without waiting for the scheduled interval.\n\nThe scan will:\n- Connect to Paperless-ngx API\n- Fetch all unprocessed documents\n- Process each document with the configured AI service\n- Update documents in Paperless-ngx with generated metadata\n\nThe process respects the function limitations set in the configuration.\n",
-        "tags": [
-          "Documents",
-          "API"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          },
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Scan initiated successfully",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string",
-                  "example": "Task completed"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Authentication required"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Error during document scan"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/key-regenerate": {
-      "post": {
-        "summary": "Regenerate API key",
-        "description": "Generates a new random API key for the application and updates the .env file.\nThe previous API key will be invalidated immediately after generation.\n\nThis API key can be used for programmatic access to the API endpoints\nby sending it in the `x-api-key` header of subsequent requests.\n\n**Security Notice**: This operation invalidates any existing API key.\nAll systems using the previous key will need to be updated.\n",
-        "tags": [
-          "System",
-          "Authentication"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "API key regenerated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "string",
-                      "description": "The newly generated API key",
-                      "example": "3f7a8d6e2c1b5a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - JWT authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Authentication required"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Error regenerating API key"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/setup": {
-      "get": {
-        "summary": "Application setup page",
-        "description": "Renders the application setup page for initial configuration.\n\nThis page allows configuring the connection to Paperless-ngx, AI services,\nand other application settings. It loads existing configuration if available\nand redirects to dashboard if setup is already complete.\n\nThe setup page is the entry point for new installations and guides users through\nthe process of connecting to Paperless-ngx, configuring AI providers, and setting up\nadmin credentials.\n",
-        "tags": [
-          "Navigation",
-          "Setup",
-          "System"
-        ],
-        "responses": {
-          "200": {
-            "description": "Setup page rendered successfully",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string",
-                  "description": "HTML content of the application setup page"
-                }
-              }
-            }
-          },
-          "302": {
-            "description": "Redirects to dashboard if setup is already complete",
-            "headers": {
-              "Location": {
-                "schema": {
-                  "type": "string",
-                  "example": "/dashboard"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Submit initial application setup configuration",
-        "description": "Configures the initial setup of the Paperless-AI application, including connections\nto Paperless-ngx, AI provider settings, processing parameters, and user authentication.\n\nThis endpoint is primarily used during the first-time setup of the application and\ncreates the necessary configuration files and database tables.\n",
-        "tags": [
-          "System",
-          "Setup"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "paperlessUrl",
-                  "paperlessToken",
-                  "aiProvider",
-                  "username",
-                  "password"
-                ],
-                "properties": {
-                  "paperlessUrl": {
-                    "type": "string",
-                    "description": "URL of the Paperless-ngx instance",
-                    "example": "https://paperless.example.com"
-                  },
-                  "paperlessToken": {
-                    "type": "string",
-                    "description": "API token for Paperless-ngx access",
-                    "example": "abc123def456"
-                  },
-                  "paperlessUsername": {
-                    "type": "string",
-                    "description": "Username for Paperless-ngx (alternative to token authentication)",
-                    "example": "admin"
-                  },
-                  "aiProvider": {
-                    "type": "string",
-                    "description": "Selected AI provider for document analysis",
-                    "enum": [
-                      "openai",
-                      "ollama",
-                      "custom",
-                      "azure"
-                    ],
-                    "example": "openai"
-                  },
-                  "openaiKey": {
-                    "type": "string",
-                    "description": "API key for OpenAI (required when aiProvider is 'openai')",
-                    "example": "sk-abc123def456"
-                  },
-                  "openaiModel": {
-                    "type": "string",
-                    "description": "OpenAI model to use for analysis",
-                    "example": "gpt-4"
-                  },
-                  "ollamaUrl": {
-                    "type": "string",
-                    "description": "URL for Ollama API (required when aiProvider is 'ollama')",
-                    "example": "http://localhost:11434"
-                  },
-                  "ollamaModel": {
-                    "type": "string",
-                    "description": "Ollama model to use for analysis",
-                    "example": "llama2"
-                  },
-                  "customApiKey": {
-                    "type": "string",
-                    "description": "API key for custom LLM provider",
-                    "example": "api-key-123"
-                  },
-                  "customBaseUrl": {
-                    "type": "string",
-                    "description": "Base URL for custom LLM provider",
-                    "example": "https://api.customllm.com"
-                  },
-                  "customModel": {
-                    "type": "string",
-                    "description": "Model name for custom LLM provider",
-                    "example": "custom-model"
-                  },
-                  "scanInterval": {
-                    "type": "number",
-                    "description": "Interval in minutes for scanning new documents",
-                    "example": 15
-                  },
-                  "systemPrompt": {
-                    "type": "string",
-                    "description": "Custom system prompt for document analysis",
-                    "example": "Extract key information from the following document..."
-                  },
-                  "showTags": {
-                    "type": "boolean",
-                    "description": "Whether to show tags in the UI",
-                    "example": true
-                  },
-                  "tags": {
-                    "type": "string",
-                    "description": "Comma-separated list of tags to use for filtering",
-                    "example": "Invoice,Receipt,Contract"
-                  },
-                  "aiProcessedTag": {
-                    "type": "boolean",
-                    "description": "Whether to add a tag for AI-processed documents",
-                    "example": true
-                  },
-                  "aiTagName": {
-                    "type": "string",
-                    "description": "Tag name to use for AI-processed documents",
-                    "example": "AI-Processed"
-                  },
-                  "usePromptTags": {
-                    "type": "boolean",
-                    "description": "Whether to use tags in prompts",
-                    "example": true
-                  },
-                  "promptTags": {
-                    "type": "string",
-                    "description": "Comma-separated list of tags to use in prompts",
-                    "example": "Invoice,Receipt"
-                  },
-                  "username": {
-                    "type": "string",
-                    "description": "Admin username for Paperless-AI",
-                    "example": "admin"
-                  },
-                  "password": {
-                    "type": "string",
-                    "description": "Admin password for Paperless-AI",
-                    "example": "securepassword"
-                  },
-                  "useExistingData": {
-                    "type": "boolean",
-                    "description": "Whether to use existing data from a previous setup",
-                    "example": false
-                  },
-                  "activateTagging": {
-                    "type": "boolean",
-                    "description": "Enable AI-based tag suggestions",
-                    "example": true
-                  },
-                  "activateCorrespondents": {
-                    "type": "boolean",
-                    "description": "Enable AI-based correspondent suggestions",
-                    "example": true
-                  },
-                  "activateDocumentType": {
-                    "type": "boolean",
-                    "description": "Enable AI-based document type suggestions",
-                    "example": true
-                  },
-                  "activateTitle": {
-                    "type": "boolean",
-                    "description": "Enable AI-based title suggestions",
-                    "example": true
-                  },
-                  "activateCustomFields": {
-                    "type": "boolean",
-                    "description": "Enable AI-based custom field extraction",
-                    "example": false
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Setup completed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "success"
-                      ],
-                      "example": "success"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Configuration saved successfully"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid configuration parameters",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "error"
-                      ],
-                      "example": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Missing required configuration parameters"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error during setup",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "error"
-                      ],
-                      "example": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Failed to save configuration: Database error"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/manual/preview/{id}": {
       "get": {
         "summary": "Document preview",
@@ -2548,841 +2645,6 @@
                   "items": {
                     "$ref": "#/components/schemas/Document"
                   }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - user not authenticated",
-            "headers": {
-              "Location": {
-                "schema": {
-                  "type": "string",
-                  "example": "/login"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error or Paperless connection error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/correspondentsCount": {
-      "get": {
-        "summary": "Get count of correspondents",
-        "description": "Retrieves the list of correspondents with their document counts.\nThis endpoint returns all correspondents in the system along with \nthe number of documents associated with each correspondent.\n",
-        "tags": [
-          "API",
-          "Metadata"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of correspondents with document counts retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "integer",
-                        "description": "ID of the correspondent",
-                        "example": 1
-                      },
-                      "name": {
-                        "type": "string",
-                        "description": "Name of the correspondent",
-                        "example": "ACME Corp"
-                      },
-                      "count": {
-                        "type": "integer",
-                        "description": "Number of documents associated with this correspondent",
-                        "example": 5
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Invalid or expired token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/tagsCount": {
-      "get": {
-        "summary": "Get count of tags",
-        "description": "Retrieves the list of tags with their document counts.\nThis endpoint returns all tags in the system along with \nthe number of documents associated with each tag.\n",
-        "tags": [
-          "API",
-          "Metadata"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of tags with document counts retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "integer",
-                        "description": "ID of the tag",
-                        "example": 1
-                      },
-                      "name": {
-                        "type": "string",
-                        "description": "Name of the tag",
-                        "example": "Invoice"
-                      },
-                      "count": {
-                        "type": "integer",
-                        "description": "Number of documents associated with this tag",
-                        "example": 12
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Invalid or expired token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/webhook/document": {
-      "post": {
-        "summary": "Webhook for document updates",
-        "description": "Processes incoming webhook notifications from Paperless-ngx about document\nchanges, additions, or deletions. The webhook allows Paperless-AI to respond\nto document changes in real-time.\n\nWhen a new document is added or updated in Paperless-ngx, this endpoint can\ntrigger automatic AI processing for metadata extraction.\n",
-        "tags": [
-          "Documents",
-          "API",
-          "System"
-        ],
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "event_type",
-                  "document_id"
-                ],
-                "properties": {
-                  "event_type": {
-                    "type": "string",
-                    "description": "Type of event that occurred",
-                    "enum": [
-                      "added",
-                      "updated",
-                      "deleted"
-                    ],
-                    "example": "added"
-                  },
-                  "document_id": {
-                    "type": "integer",
-                    "description": "ID of the affected document",
-                    "example": 123
-                  },
-                  "document_info": {
-                    "type": "object",
-                    "description": "Additional information about the document (optional)",
-                    "properties": {
-                      "title": {
-                        "type": "string",
-                        "example": "Invoice"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Webhook processed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Document event processed"
-                    },
-                    "processing_queued": {
-                      "type": "boolean",
-                      "description": "Whether AI processing was queued for this document",
-                      "example": true
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid webhook payload",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "Missing required fields: event_type, document_id"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - invalid or missing API key",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Unauthorized: Invalid API key"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error processing webhook",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/dashboard": {
-      "get": {
-        "summary": "Main dashboard page",
-        "description": "Renders the main dashboard page of the application with summary statistics and visualizations.\nThe dashboard provides an overview of processed documents, system metrics, and important statistics\nabout document processing including tag counts, correspondent counts, and token usage.\n\nThe page displays visualizations for document processing status, token distribution, \nprocessing time statistics, and document type categorization to help administrators\nunderstand system performance and document processing patterns.\n",
-        "tags": [
-          "Navigation",
-          "System"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          },
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Dashboard page rendered successfully",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string",
-                  "description": "HTML content of the dashboard page"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - user not authenticated",
-            "headers": {
-              "Location": {
-                "schema": {
-                  "type": "string",
-                  "example": "/login"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/settings": {
-      "get": {
-        "summary": "Application settings page",
-        "description": "Renders the application settings page where users can modify configuration\nafter initial setup.\n\nThis page allows administrators to update connections to Paperless-ngx, \nAI provider settings, processing parameters, feature toggles, and custom fields.\nThe interface provides validation for connection settings and displays the current\nconfiguration values.\n\nChanges made on this page require application restart to take full effect.\n",
-        "tags": [
-          "Navigation",
-          "Setup",
-          "System"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          },
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Settings page rendered successfully",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string",
-                  "description": "HTML content of the application settings page"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - user not authenticated",
-            "headers": {
-              "Location": {
-                "schema": {
-                  "type": "string",
-                  "example": "/login"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Update application settings",
-        "description": "Updates the configuration settings of the Paperless-AI application after initial setup.\nThis endpoint allows administrators to modify connections to Paperless-ngx, \nAI provider settings, processing parameters, and feature toggles.\n\nChanges made through this endpoint are applied immediately and affect all future\ndocument processing operations.\n",
-        "tags": [
-          "System",
-          "Setup"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "paperlessUrl": {
-                    "type": "string",
-                    "description": "URL of the Paperless-ngx instance",
-                    "example": "https://paperless.example.com"
-                  },
-                  "paperlessToken": {
-                    "type": "string",
-                    "description": "API token for Paperless-ngx access",
-                    "example": "abc123def456"
-                  },
-                  "paperlessUsername": {
-                    "type": "string",
-                    "description": "Username for Paperless-ngx (alternative to token authentication)",
-                    "example": "admin"
-                  },
-                  "aiProvider": {
-                    "type": "string",
-                    "description": "Selected AI provider for document analysis",
-                    "enum": [
-                      "openai",
-                      "ollama",
-                      "custom",
-                      "azure"
-                    ],
-                    "example": "openai"
-                  },
-                  "openaiKey": {
-                    "type": "string",
-                    "description": "API key for OpenAI (required when aiProvider is 'openai')",
-                    "example": "sk-abc123def456"
-                  },
-                  "openaiModel": {
-                    "type": "string",
-                    "description": "OpenAI model to use for analysis",
-                    "example": "gpt-4"
-                  },
-                  "ollamaUrl": {
-                    "type": "string",
-                    "description": "URL for Ollama API (required when aiProvider is 'ollama')",
-                    "example": "http://localhost:11434"
-                  },
-                  "ollamaModel": {
-                    "type": "string",
-                    "description": "Ollama model to use for analysis",
-                    "example": "llama2"
-                  },
-                  "customApiKey": {
-                    "type": "string",
-                    "description": "API key for custom LLM provider",
-                    "example": "api-key-123"
-                  },
-                  "customBaseUrl": {
-                    "type": "string",
-                    "description": "Base URL for custom LLM provider",
-                    "example": "https://api.customllm.com"
-                  },
-                  "customModel": {
-                    "type": "string",
-                    "description": "Model name for custom LLM provider",
-                    "example": "custom-model"
-                  },
-                  "scanInterval": {
-                    "type": "number",
-                    "description": "Interval in minutes for scanning new documents",
-                    "example": 15
-                  },
-                  "systemPrompt": {
-                    "type": "string",
-                    "description": "Custom system prompt for document analysis",
-                    "example": "Extract key information from the following document..."
-                  },
-                  "showTags": {
-                    "type": "boolean",
-                    "description": "Whether to show tags in the UI",
-                    "example": true
-                  },
-                  "tokenLimit": {
-                    "type": "integer",
-                    "description": "The maximum number of tokens th AI can handle",
-                    "example": 128000
-                  },
-                  "responseTokens": {
-                    "type": "integer",
-                    "description": "The approx. amount of tokens required for the response",
-                    "example": 1000
-                  },
-                  "tags": {
-                    "type": "string",
-                    "description": "Comma-separated list of tags to use for filtering",
-                    "example": "Invoice,Receipt,Contract"
-                  },
-                  "aiProcessedTag": {
-                    "type": "boolean",
-                    "description": "Whether to add a tag for AI-processed documents",
-                    "example": true
-                  },
-                  "aiTagName": {
-                    "type": "string",
-                    "description": "Tag name to use for AI-processed documents",
-                    "example": "AI-Processed"
-                  },
-                  "usePromptTags": {
-                    "type": "boolean",
-                    "description": "Whether to use tags in prompts",
-                    "example": true
-                  },
-                  "promptTags": {
-                    "type": "string",
-                    "description": "Comma-separated list of tags to use in prompts",
-                    "example": "Invoice,Receipt"
-                  },
-                  "useExistingData": {
-                    "type": "boolean",
-                    "description": "Whether to use existing data from a previous setup",
-                    "example": false
-                  },
-                  "activateTagging": {
-                    "type": "boolean",
-                    "description": "Enable AI-based tag suggestions",
-                    "example": true
-                  },
-                  "activateCorrespondents": {
-                    "type": "boolean",
-                    "description": "Enable AI-based correspondent suggestions",
-                    "example": true
-                  },
-                  "activateDocumentType": {
-                    "type": "boolean",
-                    "description": "Enable AI-based document type suggestions",
-                    "example": true
-                  },
-                  "activateTitle": {
-                    "type": "boolean",
-                    "description": "Enable AI-based title suggestions",
-                    "example": true
-                  },
-                  "activateCustomFields": {
-                    "type": "boolean",
-                    "description": "Enable AI-based custom field extraction",
-                    "example": false
-                  },
-                  "customFields": {
-                    "type": "string",
-                    "description": "JSON string defining custom fields to extract",
-                    "example": "{\"invoice_number\":{\"type\":\"string\"},\"total_amount\":{\"type\":\"number\"}}"
-                  },
-                  "disableAutomaticProcessing": {
-                    "type": "boolean",
-                    "description": "Disable automatic document processing",
-                    "example": false
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Settings updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "success"
-                      ],
-                      "example": "success"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Settings updated successfully"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid configuration parameters",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "error"
-                      ],
-                      "example": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid settings: AI provider required when automatic processing is enabled"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error while updating settings",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "error"
-                      ],
-                      "example": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Failed to update settings: Database error"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/debug": {
-      "get": {
-        "summary": "Debug interface",
-        "description": "Renders a debug interface for testing and troubleshooting Paperless-ngx connections\nand API responses.\n\nThis page provides a simple UI for executing API calls to Paperless-ngx endpoints\nand viewing the raw responses. It's primarily used for diagnosing connection issues\nand understanding the structure of data returned by the Paperless-ngx API.\n\nThe debug interface should only be accessible to administrators and is not intended\nfor regular use in production environments.\n",
-        "tags": [
-          "Navigation",
-          "System"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Debug interface rendered successfully",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string",
-                  "description": "HTML content of the debug interface"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - user not authenticated",
-            "headers": {
-              "Location": {
-                "schema": {
-                  "type": "string",
-                  "example": "/login"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/debug/tags": {
-      "get": {
-        "summary": "Debug tags API",
-        "description": "Returns the raw tags data from Paperless-ngx for debugging purposes.\n\nThis endpoint performs a direct API call to the Paperless-ngx tags endpoint\nand returns the unmodified response. It's used for diagnosing tag-related issues\nand verifying proper connection to Paperless-ngx.\n",
-        "tags": [
-          "System",
-          "API",
-          "Metadata"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Tags data retrieved successfully from Paperless-ngx",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "description": "Raw response from Paperless-ngx tags API"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - user not authenticated",
-            "headers": {
-              "Location": {
-                "schema": {
-                  "type": "string",
-                  "example": "/login"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error or Paperless connection error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/debug/documents": {
-      "get": {
-        "summary": "Debug documents API",
-        "description": "Returns the raw documents data from Paperless-ngx for debugging purposes.\n\nThis endpoint performs a direct API call to the Paperless-ngx documents endpoint\nand returns the unmodified response. It's used for diagnosing document-related issues\nand verifying proper connection to Paperless-ngx.\n",
-        "tags": [
-          "System",
-          "API",
-          "Documents"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Documents data retrieved successfully from Paperless-ngx",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "description": "Raw response from Paperless-ngx documents API"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - user not authenticated",
-            "headers": {
-              "Location": {
-                "schema": {
-                  "type": "string",
-                  "example": "/login"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error or Paperless connection error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/debug/correspondents": {
-      "get": {
-        "summary": "Debug correspondents API",
-        "description": "Returns the raw correspondents data from Paperless-ngx for debugging purposes.\n\nThis endpoint performs a direct API call to the Paperless-ngx correspondents endpoint\nand returns the unmodified response. It's used for diagnosing correspondent-related issues\nand verifying proper connection to Paperless-ngx.\n",
-        "tags": [
-          "System",
-          "API",
-          "Metadata"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Correspondents data retrieved successfully from Paperless-ngx",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "description": "Raw response from Paperless-ngx correspondents API"
                 }
               }
             }
@@ -3743,6 +3005,744 @@
                       ]
                     }
                   }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settings": {
+      "get": {
+        "summary": "Application settings page",
+        "description": "Renders the application settings page where users can modify configuration\nafter initial setup.\n\nThis page allows administrators to update connections to Paperless-ngx,\nAI provider settings, processing parameters, feature toggles, and custom fields.\nThe interface provides validation for connection settings and displays the current\nconfiguration values.\n\nChanges made on this page require application restart to take full effect.\n",
+        "tags": [
+          "Navigation",
+          "Setup",
+          "System"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Settings page rendered successfully",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML content of the application settings page"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - user not authenticated",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "example": "/login"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Update application settings",
+        "description": "Updates the configuration settings of the Paperless-AI application after initial setup.\nThis endpoint allows administrators to modify connections to Paperless-ngx,\nAI provider settings, processing parameters, and feature toggles.\n\nChanges made through this endpoint are applied immediately and affect all future\ndocument processing operations.\n",
+        "tags": [
+          "System",
+          "Setup"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "paperlessUrl": {
+                    "type": "string",
+                    "description": "URL of the Paperless-ngx instance",
+                    "example": "https://paperless.example.com"
+                  },
+                  "paperlessToken": {
+                    "type": "string",
+                    "description": "API token for Paperless-ngx access",
+                    "example": "abc123def456"
+                  },
+                  "paperlessUsername": {
+                    "type": "string",
+                    "description": "Username for Paperless-ngx (alternative to token authentication)",
+                    "example": "admin"
+                  },
+                  "aiProvider": {
+                    "type": "string",
+                    "description": "Selected AI provider for document analysis",
+                    "enum": [
+                      "openai",
+                      "ollama",
+                      "custom",
+                      "azure"
+                    ],
+                    "example": "openai"
+                  },
+                  "openaiKey": {
+                    "type": "string",
+                    "description": "API key for OpenAI (required when aiProvider is 'openai')",
+                    "example": "sk-abc123def456"
+                  },
+                  "openaiModel": {
+                    "type": "string",
+                    "description": "OpenAI model to use for analysis",
+                    "example": "gpt-4"
+                  },
+                  "ollamaUrl": {
+                    "type": "string",
+                    "description": "URL for Ollama API (required when aiProvider is 'ollama')",
+                    "example": "http://localhost:11434"
+                  },
+                  "ollamaModel": {
+                    "type": "string",
+                    "description": "Ollama model to use for analysis",
+                    "example": "llama2"
+                  },
+                  "customApiKey": {
+                    "type": "string",
+                    "description": "API key for custom LLM provider",
+                    "example": "api-key-123"
+                  },
+                  "customBaseUrl": {
+                    "type": "string",
+                    "description": "Base URL for custom LLM provider",
+                    "example": "https://api.customllm.com"
+                  },
+                  "customModel": {
+                    "type": "string",
+                    "description": "Model name for custom LLM provider",
+                    "example": "custom-model"
+                  },
+                  "scanInterval": {
+                    "type": "number",
+                    "description": "Interval in minutes for scanning new documents",
+                    "example": 15
+                  },
+                  "systemPrompt": {
+                    "type": "string",
+                    "description": "Custom system prompt for document analysis",
+                    "example": "Extract key information from the following document..."
+                  },
+                  "showTags": {
+                    "type": "boolean",
+                    "description": "Whether to show tags in the UI",
+                    "example": true
+                  },
+                  "tokenLimit": {
+                    "type": "integer",
+                    "description": "The maximum number of tokens th AI can handle",
+                    "example": 128000
+                  },
+                  "responseTokens": {
+                    "type": "integer",
+                    "description": "The approx. amount of tokens required for the response",
+                    "example": 1000
+                  },
+                  "tags": {
+                    "type": "string",
+                    "description": "Comma-separated list of tags to use for filtering",
+                    "example": "Invoice,Receipt,Contract"
+                  },
+                  "aiProcessedTag": {
+                    "type": "boolean",
+                    "description": "Whether to add a tag for AI-processed documents",
+                    "example": true
+                  },
+                  "aiTagName": {
+                    "type": "string",
+                    "description": "Tag name to use for AI-processed documents",
+                    "example": "AI-Processed"
+                  },
+                  "usePromptTags": {
+                    "type": "boolean",
+                    "description": "Whether to use tags in prompts",
+                    "example": true
+                  },
+                  "promptTags": {
+                    "type": "string",
+                    "description": "Comma-separated list of tags to use in prompts",
+                    "example": "Invoice,Receipt"
+                  },
+                  "useExistingData": {
+                    "type": "boolean",
+                    "description": "Whether to use existing data from a previous setup",
+                    "example": false
+                  },
+                  "activateTagging": {
+                    "type": "boolean",
+                    "description": "Enable AI-based tag suggestions",
+                    "example": true
+                  },
+                  "activateCorrespondents": {
+                    "type": "boolean",
+                    "description": "Enable AI-based correspondent suggestions",
+                    "example": true
+                  },
+                  "activateDocumentType": {
+                    "type": "boolean",
+                    "description": "Enable AI-based document type suggestions",
+                    "example": true
+                  },
+                  "activateTitle": {
+                    "type": "boolean",
+                    "description": "Enable AI-based title suggestions",
+                    "example": true
+                  },
+                  "activateCustomFields": {
+                    "type": "boolean",
+                    "description": "Enable AI-based custom field extraction",
+                    "example": false
+                  },
+                  "customFields": {
+                    "type": "string",
+                    "description": "JSON string defining custom fields to extract",
+                    "example": "{\"invoice_number\":{\"type\":\"string\"},\"total_amount\":{\"type\":\"number\"}}"
+                  },
+                  "disableAutomaticProcessing": {
+                    "type": "boolean",
+                    "description": "Disable automatic document processing",
+                    "example": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Settings updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "success"
+                      ],
+                      "example": "success"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Settings updated successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid configuration parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "error"
+                      ],
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid settings: AI provider required when automatic processing is enabled"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error while updating settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "error"
+                      ],
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to update settings: Database error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/setup": {
+      "get": {
+        "summary": "Application setup page",
+        "description": "Renders the application setup page for initial configuration.\n\nThis page allows configuring the connection to Paperless-ngx, AI services,\nand other application settings. It loads existing configuration if available\nand redirects to dashboard if setup is already complete.\n\nThe setup page is the entry point for new installations and guides users through\nthe process of connecting to Paperless-ngx, configuring AI providers, and setting up\nadmin credentials.\n",
+        "tags": [
+          "Navigation",
+          "Setup",
+          "System"
+        ],
+        "responses": {
+          "200": {
+            "description": "Setup page rendered successfully",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML content of the application setup page"
+                }
+              }
+            }
+          },
+          "302": {
+            "description": "Redirects to dashboard if setup is already complete",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "example": "/dashboard"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Submit initial application setup configuration",
+        "description": "Configures the initial setup of the Paperless-AI application, including connections\nto Paperless-ngx, AI provider settings, processing parameters, and user authentication.\n\nThis endpoint is primarily used during the first-time setup of the application and\ncreates the necessary configuration files and database tables.\n",
+        "tags": [
+          "System",
+          "Setup"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "paperlessUrl",
+                  "paperlessToken",
+                  "aiProvider",
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "paperlessUrl": {
+                    "type": "string",
+                    "description": "URL of the Paperless-ngx instance",
+                    "example": "https://paperless.example.com"
+                  },
+                  "paperlessToken": {
+                    "type": "string",
+                    "description": "API token for Paperless-ngx access",
+                    "example": "abc123def456"
+                  },
+                  "paperlessUsername": {
+                    "type": "string",
+                    "description": "Username for Paperless-ngx (alternative to token authentication)",
+                    "example": "admin"
+                  },
+                  "aiProvider": {
+                    "type": "string",
+                    "description": "Selected AI provider for document analysis",
+                    "enum": [
+                      "openai",
+                      "ollama",
+                      "custom",
+                      "azure"
+                    ],
+                    "example": "openai"
+                  },
+                  "openaiKey": {
+                    "type": "string",
+                    "description": "API key for OpenAI (required when aiProvider is 'openai')",
+                    "example": "sk-abc123def456"
+                  },
+                  "openaiModel": {
+                    "type": "string",
+                    "description": "OpenAI model to use for analysis",
+                    "example": "gpt-4"
+                  },
+                  "ollamaUrl": {
+                    "type": "string",
+                    "description": "URL for Ollama API (required when aiProvider is 'ollama')",
+                    "example": "http://localhost:11434"
+                  },
+                  "ollamaModel": {
+                    "type": "string",
+                    "description": "Ollama model to use for analysis",
+                    "example": "llama2"
+                  },
+                  "customApiKey": {
+                    "type": "string",
+                    "description": "API key for custom LLM provider",
+                    "example": "api-key-123"
+                  },
+                  "customBaseUrl": {
+                    "type": "string",
+                    "description": "Base URL for custom LLM provider",
+                    "example": "https://api.customllm.com"
+                  },
+                  "customModel": {
+                    "type": "string",
+                    "description": "Model name for custom LLM provider",
+                    "example": "custom-model"
+                  },
+                  "scanInterval": {
+                    "type": "number",
+                    "description": "Interval in minutes for scanning new documents",
+                    "example": 15
+                  },
+                  "systemPrompt": {
+                    "type": "string",
+                    "description": "Custom system prompt for document analysis",
+                    "example": "Extract key information from the following document..."
+                  },
+                  "showTags": {
+                    "type": "boolean",
+                    "description": "Whether to show tags in the UI",
+                    "example": true
+                  },
+                  "tags": {
+                    "type": "string",
+                    "description": "Comma-separated list of tags to use for filtering",
+                    "example": "Invoice,Receipt,Contract"
+                  },
+                  "aiProcessedTag": {
+                    "type": "boolean",
+                    "description": "Whether to add a tag for AI-processed documents",
+                    "example": true
+                  },
+                  "aiTagName": {
+                    "type": "string",
+                    "description": "Tag name to use for AI-processed documents",
+                    "example": "AI-Processed"
+                  },
+                  "usePromptTags": {
+                    "type": "boolean",
+                    "description": "Whether to use tags in prompts",
+                    "example": true
+                  },
+                  "promptTags": {
+                    "type": "string",
+                    "description": "Comma-separated list of tags to use in prompts",
+                    "example": "Invoice,Receipt"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "Admin username for Paperless-AI",
+                    "example": "admin"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Admin password for Paperless-AI",
+                    "example": "securepassword"
+                  },
+                  "useExistingData": {
+                    "type": "boolean",
+                    "description": "Whether to use existing data from a previous setup",
+                    "example": false
+                  },
+                  "activateTagging": {
+                    "type": "boolean",
+                    "description": "Enable AI-based tag suggestions",
+                    "example": true
+                  },
+                  "activateCorrespondents": {
+                    "type": "boolean",
+                    "description": "Enable AI-based correspondent suggestions",
+                    "example": true
+                  },
+                  "activateDocumentType": {
+                    "type": "boolean",
+                    "description": "Enable AI-based document type suggestions",
+                    "example": true
+                  },
+                  "activateTitle": {
+                    "type": "boolean",
+                    "description": "Enable AI-based title suggestions",
+                    "example": true
+                  },
+                  "activateCustomFields": {
+                    "type": "boolean",
+                    "description": "Enable AI-based custom field extraction",
+                    "example": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Setup completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "success"
+                      ],
+                      "example": "success"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Configuration saved successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid configuration parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "error"
+                      ],
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Missing required configuration parameters"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error during setup",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "error"
+                      ],
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to save configuration: Database error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/correspondentsCount": {
+      "get": {
+        "summary": "Get count of correspondents",
+        "description": "Retrieves the list of correspondents with their document counts.\nThis endpoint returns all correspondents in the system along with\nthe number of documents associated with each correspondent.\n",
+        "tags": [
+          "API",
+          "Metadata"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of correspondents with document counts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "description": "ID of the correspondent",
+                        "example": 1
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Name of the correspondent",
+                        "example": "ACME Corp"
+                      },
+                      "count": {
+                        "type": "integer",
+                        "description": "Number of documents associated with this correspondent",
+                        "example": 5
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tagsCount": {
+      "get": {
+        "summary": "Get count of tags",
+        "description": "Retrieves the list of tags with their document counts.\nThis endpoint returns all tags in the system along with\nthe number of documents associated with each tag.\n",
+        "tags": [
+          "API",
+          "Metadata"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of tags with document counts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "description": "ID of the tag",
+                        "example": 1
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Name of the tag",
+                        "example": "Invoice"
+                      },
+                      "count": {
+                        "type": "integer",
+                        "description": "Number of documents associated with this tag",
+                        "example": 12
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
