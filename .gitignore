@@ -13,6 +13,9 @@ data bak/
 data_bak/
 data_*/
 .env*
+# Whitelist the example templates (real .env stays ignored).
+!.env.example
+!.env.portainer.example
 docker-compose-dev.yml
 public/images/
 delete_all.js
@@ -83,7 +86,6 @@ package-lock.json.bak
 # Claude Code project memory — machine-generated, not meant to be shared
 CLAUDE.md
 
-# Portainer-specific local files (contain real IPs / hostnames).
-# Use .env.example + docker-compose.example.yml as starting points instead.
+# Portainer-specific local file (real IPs / hostnames).
+# .env.portainer.example IS tracked — see whitelist near the top of this file.
 .env.portainer
-.env.portainer.example
