@@ -84,7 +84,8 @@ class FormManager {
         const ollamaSettings = document.getElementById('ollamaSettings');
         const customSettings = document.getElementById('customSettings');
         const azureSettings = document.getElementById('azureSettings');
-        
+        const anthropicSettings = document.getElementById('anthropicSettings');
+
         // Get all required fields
         const openaiKey = document.getElementById('openaiKey');
         const ollamaUrl = document.getElementById('ollamaUrl');
@@ -96,13 +97,15 @@ class FormManager {
         const azureEndpoint = document.getElementById('azureEndpoint');
         const azureModel = document.getElementById('azureApiVersion');
         const azureDeployment = document.getElementById('azureDeploymentName');
-        
+        const anthropicApiKey = document.getElementById('anthropicApiKey');
+
         // Hide all settings first
         openaiSettings.style.display = 'none';
         ollamaSettings.style.display = 'none';
         customSettings.style.display = 'none';
         azureSettings.style.display = 'none';
-        
+        if (anthropicSettings) anthropicSettings.style.display = 'none';
+
         // Reset all required attributes
         openaiKey.required = false;
         ollamaUrl.required = false;
@@ -114,7 +117,8 @@ class FormManager {
         azureEndpoint.required = false;
         azureModel.required = false;
         azureDeployment.required = false;
-        
+        if (anthropicApiKey) anthropicApiKey.required = false;
+
         // Show and set required fields based on selected provider
         switch (provider) {
             case 'openai':
@@ -138,6 +142,10 @@ class FormManager {
                 azureEndpoint.required = true;
                 azureModel.required = true;
                 azureDeployment.required = true;
+                break;
+            case 'anthropic':
+                if (anthropicSettings) anthropicSettings.style.display = 'block';
+                if (anthropicApiKey) anthropicApiKey.required = true;
                 break;
         }
     }

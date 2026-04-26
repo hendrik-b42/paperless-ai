@@ -105,6 +105,7 @@ class FormManager {
         const ollamaSettings = document.getElementById('ollamaSettings');
         const customSettings = document.getElementById('customSettings');
         const azureSettings = document.getElementById('azureSettings');
+        const anthropicSettings = document.getElementById('anthropicSettings');
 
         // Get all provider-specific fields
         const openaiKey = document.getElementById('openaiKey');
@@ -117,6 +118,7 @@ class FormManager {
         const azureEndpoint = document.getElementById('azureEndpoint');
         const azureDeploymentName = document.getElementById('azureDeploymentName');
         const azureApiVersion = document.getElementById('azureApiVersion');
+        const anthropicApiKey = document.getElementById('anthropicApiKey');
 
         // Restriction settings
         const restrictToExistingTags = document.getElementById('restrictToExistingTags');
@@ -138,7 +140,8 @@ class FormManager {
         ollamaSettings.classList.add('hidden');
         customSettings.classList.add('hidden');
         azureSettings.classList.add('hidden');
-        
+        if (anthropicSettings) anthropicSettings.classList.add('hidden');
+
         // Reset all required fields
         openaiKey.required = false;
         ollamaUrl.required = false;
@@ -150,7 +153,8 @@ class FormManager {
         azureEndpoint.required = false;
         azureDeploymentName.required = false;
         azureApiVersion.required = false;
-        
+        if (anthropicApiKey) anthropicApiKey.required = false;
+
         // Show and set required fields based on selected provider
         switch (provider) {
             case 'openai':
@@ -174,6 +178,10 @@ class FormManager {
                 azureEndpoint.required = true;
                 azureDeploymentName.required = true;
                 azureApiVersion.required = true;
+                break;
+            case 'anthropic':
+                if (anthropicSettings) anthropicSettings.classList.remove('hidden');
+                if (anthropicApiKey) anthropicApiKey.required = true;
                 break;
         }
     }

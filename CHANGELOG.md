@@ -15,8 +15,11 @@ check, improved prompt injection, and several upstream bugfixes.
 
 Design principles:
 
-- **No new npm dependencies.** All functionality built on the existing stack
-  (axios, openai, better-sqlite3, node-cron, express, ejs).
+- **Minimal dependency footprint.** The original Optimizer feature shipped
+  on the existing stack (axios, openai, better-sqlite3, node-cron, express,
+  ejs). The later AI-Service consolidation deliberately added three official
+  provider SDKs (`@anthropic-ai/sdk`, `@google/genai`, `ollama`) — see the
+  "AI-Service Konsolidierung" section below for the rationale.
 - **Backwards compatible.** DB changes use `CREATE TABLE IF NOT EXISTS`;
   existing users need no migration.
 - **JWT-protected API.** All destructive endpoints require authentication.
@@ -181,6 +184,66 @@ Existing document types (sorted by frequency):
 - Backwards-compatible: falls back to legacy string arrays if the
   new `options.existingTagsWithCounts` / `-CorrespondentsWithCounts` /
   `-DocumentTypesWithCounts` aren't provided by the caller.
+
+### AI-Service Konsolidierung
+
+The four parallel main-pipeline services (`openaiService`, `customService`,
+`azureService`, `ollamaService`) and the Optimizer's inline multi-provider
+dispatcher (`optimizerAiService`) shared 380–680 lines of duplicated
+boilerplate per file. Bugfixes and feature work landed only in
+`openaiService` (e.g. empty-tags retry, structured taxonomy injection)
+and silently drifted out of sync with the clones.
+
+The refactor extracts a thin **provider-adapter layer** under
+`services/providers/` (one adapter per provider family, all conforming to
+`{ chat, describe, checkStatus }`) and a single provider-agnostic
+**document-analysis pipeline** (`services/aiPipeline.js`). Both the
+main scan and the Optimizer's `verifyCluster` now go through the same
+adapter layer, but the two pipelines (`aiPipeline` vs. Optimizer's
+cluster-verify flow) stay separate — respecting the original CLAUDE.md
+rule "Two independent AI pipelines, each with its own factory".
+
+Concrete changes:
+
+- **New**: `services/providers/{openaiCompatible,ollama,anthropic,gemini,
+  perplexity,index}.js` — provider adapters and resolver
+- **New**: `services/aiPipeline.js` — document-analysis orchestrator
+  (thumbnail caching, structured taxonomy block, `RestrictionPromptService`
+  integration, token budgeting, empty-tags retry, response parsing). All
+  fork features from `openaiService` are now active for **every** provider.
+- **Rewritten**: `services/aiServiceFactory.js` — thin dispatcher that
+  binds the resolved adapter to the pipeline. Backward-compatible API.
+- **Rewritten**: `services/optimizerAiService.js` — same JSON schema as
+  before (`{ merge, canonical, confidence, reason }`), but the inline
+  axios calls for OpenAI/Anthropic/Gemini/Perplexity/Azure/Ollama/Custom
+  are gone. All seven providers now go through `services/providers/*`.
+- **Updated**: `routes/manual.js` — removed the 4-way `if/else` over
+  `process.env.AI_PROVIDER` for `/manual/analyze` and `/manual/playground`;
+  both now go through the factory like the main scan.
+- **Deleted**: `services/{openaiService,customService,azureService,
+  ollamaService}.js`.
+- **New**: Anthropic Claude as a 5th main-pipeline provider
+  (`AI_PROVIDER=anthropic`). UI option in setup wizard and settings page;
+  `setupService.validateAnthropicConfig()` mirrors the existing OpenAI/
+  Azure validators.
+- **New**: GUI for Optimizer-provider configuration. The settings page now
+  has an "Optimizer (Erweitert)" section where the optimizer's provider
+  and per-provider model can be overridden without editing `data/.env`.
+  Default is "Wie Hauptpipeline" (i.e. `OPTIMIZER_AI_PROVIDER` is left
+  empty and the optimizer falls back to `AI_PROVIDER`).
+- **New env vars**: `ANTHROPIC_MODEL`, `GEMINI_MODEL`, `PERPLEXITY_MODEL`
+  (model overrides for the main pipeline; the Optimizer overrides
+  `OPTIMIZER_*_MODEL` already existed).
+- **Three new npm dependencies**: `@anthropic-ai/sdk`, `@google/genai`,
+  `ollama`. The earlier "no new npm dependencies" rule has been
+  deliberately relaxed — official SDKs give us prompt caching, auto-retries,
+  proper API-version headers and type safety. Perplexity reuses the
+  existing `openai` SDK (its API is OpenAI-compatible).
+
+Side effect: Empty-tags-retry and the structured taxonomy block are now
+active for **all** providers. Previously they were OpenAI-only — Custom
+and Azure (which were 95 % copies of `openaiService`) had silently drifted
+out of sync. The consolidation propagates the fix.
 
 ## Bugfixes
 

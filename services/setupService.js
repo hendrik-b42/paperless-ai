@@ -126,6 +126,25 @@ class SetupService {
     }
   }
 
+  async validateAnthropicConfig(apiKey, model) {
+    if (config.CONFIGURED !== false) return true;
+    try {
+      const Anthropic = require('@anthropic-ai/sdk');
+      const client = new Anthropic.Anthropic({ apiKey });
+      // Cheapest probe: 5-token completion against the smallest current model.
+      // Auth + quota issues both surface here.
+      const response = await client.messages.create({
+        model: model || 'claude-3-5-haiku-latest',
+        max_tokens: 5,
+        messages: [{ role: 'user', content: 'ping' }]
+      });
+      return Array.isArray(response.content) && response.content.length > 0;
+    } catch (error) {
+      console.error('Anthropic validation error:', error.message);
+      return false;
+    }
+  }
+
   async validateAzureConfig(apiKey, endpoint, deploymentName, apiVersion) {
     console.log('Endpoint: ', endpoint);
     if (config.CONFIGURED === false) {

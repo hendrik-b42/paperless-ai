@@ -84,7 +84,9 @@ router.get('/setup', async (req, res) => {
       AZURE_ENDPOINT: process.env.AZURE_ENDPOINT || '',
       AZURE_API_KEY: process.env.AZURE_API_KEY || '',
       AZURE_DEPLOYMENT_NAME: process.env.AZURE_DEPLOYMENT_NAME || '',
-      AZURE_API_VERSION: process.env.AZURE_API_VERSION || ''
+      AZURE_API_VERSION: process.env.AZURE_API_VERSION || '',
+      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
+      ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-latest'
     };
 
     const [isEnvConfigured, users] = await Promise.all([
@@ -351,10 +353,12 @@ router.post('/setup', express.json(), async (req, res) => {
       azureEndpoint,
       azureApiKey,
       azureDeploymentName,
-      azureApiVersion
+      azureApiVersion,
+      anthropicApiKey,
+      anthropicModel
     } = req.body;
 
-    const sensitiveKeys = ['paperlessToken', 'openaiKey', 'customApiKey', 'password', 'confirmPassword'];
+    const sensitiveKeys = ['paperlessToken', 'openaiKey', 'customApiKey', 'password', 'confirmPassword', 'anthropicApiKey'];
     const redactedBody = Object.fromEntries(
       Object.entries(req.body).map(([key, value]) => [
         key,
@@ -460,7 +464,9 @@ router.post('/setup', express.json(), async (req, res) => {
       AZURE_ENDPOINT: azureEndpoint || '',
       AZURE_API_KEY: azureApiKey || '',
       AZURE_DEPLOYMENT_NAME: azureDeploymentName || '',
-      AZURE_API_VERSION: azureApiVersion || ''
+      AZURE_API_VERSION: azureApiVersion || '',
+      ANTHROPIC_API_KEY: anthropicApiKey || '',
+      ANTHROPIC_MODEL: anthropicModel || 'claude-3-5-sonnet-latest'
     };
 
     if (aiProvider === 'openai') {
@@ -498,6 +504,15 @@ router.post('/setup', express.json(), async (req, res) => {
           error: 'Azure connection failed. Please check URL, API Key, Deployment Name and API Version.'
         });
       }
+    } else if (aiProvider === 'anthropic') {
+      const isAnthropicValid = await setupService.validateAnthropicConfig(anthropicApiKey, anthropicModel);
+      if (!isAnthropicValid) {
+        return res.status(400).json({
+          error: 'Anthropic connection failed. Please check API Key and Model.'
+        });
+      }
+      config.ANTHROPIC_API_KEY = anthropicApiKey;
+      config.ANTHROPIC_MODEL = anthropicModel || 'claude-3-5-sonnet-latest';
     }
 
     await setupService.saveConfig(config);

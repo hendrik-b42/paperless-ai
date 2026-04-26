@@ -91,6 +91,17 @@ router.get('/settings', async (req, res) => {
     AZURE_API_KEY: process.env.AZURE_API_KEY || '',
     AZURE_DEPLOYMENT_NAME: process.env.AZURE_DEPLOYMENT_NAME || '',
     AZURE_API_VERSION: process.env.AZURE_API_VERSION || '',
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
+    ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-latest',
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
+    GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-1.5-pro',
+    PERPLEXITY_API_KEY: process.env.PERPLEXITY_API_KEY || '',
+    PERPLEXITY_MODEL: process.env.PERPLEXITY_MODEL || 'sonar',
+    OPTIMIZER_AI_PROVIDER: process.env.OPTIMIZER_AI_PROVIDER || '',
+    OPTIMIZER_OPENAI_MODEL: process.env.OPTIMIZER_OPENAI_MODEL || '',
+    OPTIMIZER_ANTHROPIC_MODEL: process.env.OPTIMIZER_ANTHROPIC_MODEL || '',
+    OPTIMIZER_GEMINI_MODEL: process.env.OPTIMIZER_GEMINI_MODEL || '',
+    OPTIMIZER_PERPLEXITY_MODEL: process.env.OPTIMIZER_PERPLEXITY_MODEL || '',
     RESTRICT_TO_EXISTING_TAGS: process.env.RESTRICT_TO_EXISTING_TAGS || 'no',
     RESTRICT_TO_EXISTING_CORRESPONDENTS: process.env.RESTRICT_TO_EXISTING_CORRESPONDENTS || 'no',
     RESTRICT_TO_EXISTING_DOCUMENT_TYPES: process.env.RESTRICT_TO_EXISTING_DOCUMENT_TYPES || 'no',
@@ -346,7 +357,18 @@ router.post('/settings', express.json(), async (req, res) => {
       azureEndpoint,
       azureApiKey,
       azureDeploymentName,
-      azureApiVersion
+      azureApiVersion,
+      anthropicApiKey,
+      anthropicModel,
+      geminiApiKey,
+      geminiModel,
+      perplexityApiKey,
+      perplexityModel,
+      optimizerAiProvider,
+      optimizerOpenaiModel,
+      optimizerAnthropicModel,
+      optimizerGeminiModel,
+      optimizerPerplexityModel
     } = req.body;
 
     const processedPrompt = systemPrompt
@@ -389,6 +411,17 @@ router.post('/settings', express.json(), async (req, res) => {
       AZURE_API_KEY: process.env.AZURE_API_KEY || '',
       AZURE_DEPLOYMENT_NAME: process.env.AZURE_DEPLOYMENT_NAME || '',
       AZURE_API_VERSION: process.env.AZURE_API_VERSION || '',
+      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
+      ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL || '',
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
+      GEMINI_MODEL: process.env.GEMINI_MODEL || '',
+      PERPLEXITY_API_KEY: process.env.PERPLEXITY_API_KEY || '',
+      PERPLEXITY_MODEL: process.env.PERPLEXITY_MODEL || '',
+      OPTIMIZER_AI_PROVIDER: process.env.OPTIMIZER_AI_PROVIDER || '',
+      OPTIMIZER_OPENAI_MODEL: process.env.OPTIMIZER_OPENAI_MODEL || '',
+      OPTIMIZER_ANTHROPIC_MODEL: process.env.OPTIMIZER_ANTHROPIC_MODEL || '',
+      OPTIMIZER_GEMINI_MODEL: process.env.OPTIMIZER_GEMINI_MODEL || '',
+      OPTIMIZER_PERPLEXITY_MODEL: process.env.OPTIMIZER_PERPLEXITY_MODEL || '',
       RESTRICT_TO_EXISTING_TAGS: process.env.RESTRICT_TO_EXISTING_TAGS || 'no',
       RESTRICT_TO_EXISTING_CORRESPONDENTS: process.env.RESTRICT_TO_EXISTING_CORRESPONDENTS || 'no',
       RESTRICT_TO_EXISTING_DOCUMENT_TYPES: process.env.RESTRICT_TO_EXISTING_DOCUMENT_TYPES || 'no',
@@ -491,8 +524,37 @@ router.post('/settings', express.json(), async (req, res) => {
         if (azureApiKey) updatedConfig.AZURE_API_KEY = azureApiKey;
         if (azureDeploymentName) updatedConfig.AZURE_DEPLOYMENT_NAME = azureDeploymentName;
         if (azureApiVersion) updatedConfig.AZURE_API_VERSION = azureApiVersion;
+      } else if (aiProvider === 'anthropic' && anthropicApiKey) {
+        const isAnthropicValid = await setupService.validateAnthropicConfig(
+          anthropicApiKey,
+          anthropicModel || currentConfig.ANTHROPIC_MODEL
+        );
+        if (!isAnthropicValid) {
+          return res.status(400).json({
+            error: 'Anthropic connection failed. Please check API Key and Model.'
+          });
+        }
+        updatedConfig.ANTHROPIC_API_KEY = anthropicApiKey;
+        if (anthropicModel) updatedConfig.ANTHROPIC_MODEL = anthropicModel;
       }
     }
+
+    // Anthropic / Gemini / Perplexity API-Keys können auch ohne Hauptpipeline-
+    // Wechsel gesetzt werden — dann nutzt sie nur der Optimizer.
+    if (anthropicApiKey && aiProvider !== 'anthropic') updatedConfig.ANTHROPIC_API_KEY = anthropicApiKey;
+    if (anthropicModel && aiProvider !== 'anthropic') updatedConfig.ANTHROPIC_MODEL = anthropicModel;
+    if (geminiApiKey) updatedConfig.GEMINI_API_KEY = geminiApiKey;
+    if (geminiModel) updatedConfig.GEMINI_MODEL = geminiModel;
+    if (perplexityApiKey) updatedConfig.PERPLEXITY_API_KEY = perplexityApiKey;
+    if (perplexityModel) updatedConfig.PERPLEXITY_MODEL = perplexityModel;
+
+    // Optimizer-Provider-Override (leer = "wie Hauptpipeline" = Fallback in
+    // services/providers/index.js auf AI_PROVIDER).
+    updatedConfig.OPTIMIZER_AI_PROVIDER = optimizerAiProvider || '';
+    if (optimizerOpenaiModel)     updatedConfig.OPTIMIZER_OPENAI_MODEL     = optimizerOpenaiModel;
+    if (optimizerAnthropicModel)  updatedConfig.OPTIMIZER_ANTHROPIC_MODEL  = optimizerAnthropicModel;
+    if (optimizerGeminiModel)     updatedConfig.OPTIMIZER_GEMINI_MODEL     = optimizerGeminiModel;
+    if (optimizerPerplexityModel) updatedConfig.OPTIMIZER_PERPLEXITY_MODEL = optimizerPerplexityModel;
 
     if (scanInterval) updatedConfig.SCAN_INTERVAL = scanInterval;
     if (systemPrompt) updatedConfig.SYSTEM_PROMPT = processedPrompt.replace(/\r\n/g, '\n').replace(/\n/g, '\\n');

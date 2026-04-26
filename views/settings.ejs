@@ -280,6 +280,7 @@
                                         <option value="ollama" <%= config.AI_PROVIDER === 'ollama' ? 'selected' : '' %>>Ollama (Local LLM)</option>
                                         <option value="custom" <%= config.AI_PROVIDER === 'custom' ? 'selected' : '' %>>Custom</option>
                                         <option value="azure" <%= config.AI_PROVIDER === 'azure' ? 'selected' : '' %>>Azure</option>
+                                        <option value="anthropic" <%= config.AI_PROVIDER === 'anthropic' ? 'selected' : '' %>>Anthropic Claude</option>
                                     </select>
                                 </div>
 
@@ -408,12 +409,40 @@
 
                                     <div class="space-y-2">
                                         <label for="azureApiVersion">API Version</label>
-                                        <input type="text" 
-                                               id="azureApiVersion" 
+                                        <input type="text"
+                                               id="azureApiVersion"
                                                name="azureApiVersion"
                                                value="<%= config.AZURE_API_VERSION %>"
                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                placeholder="Enter API version">
+                                    </div>
+                                </div>
+
+                                <!-- Anthropic Settings -->
+                                <div id="anthropicSettings" class="space-y-4">
+                                    <div class="space-y-2">
+                                        <label for="anthropicApiKey">Anthropic API Key</label>
+                                        <div class="relative">
+                                            <input type="password"
+                                                   id="anthropicApiKey"
+                                                   name="anthropicApiKey"
+                                                   value="<%= config.ANTHROPIC_API_KEY %>"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                   placeholder="sk-ant-...">
+                                            <button type="button" class="password-toggle" data-input="anthropicApiKey">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <label for="anthropicModel">Anthropic Model</label>
+                                        <input type="text"
+                                               id="anthropicModel"
+                                               name="anthropicModel"
+                                               value="<%= config.ANTHROPIC_MODEL %>"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                               placeholder="claude-3-5-sonnet-latest">
                                     </div>
                                 </div>
 
@@ -440,7 +469,104 @@
                                 </div>
                             </div>
                         </section>
-        
+
+                        <!-- Optimizer (Advanced) Section -->
+                        <section class="space-y-6">
+                            <h2 class="text-xl font-bold flex items-center gap-2 text-primary mb-4">
+                                <i class="fas fa-code-branch"></i>
+                                Optimizer (Erweitert)
+                            </h2>
+                            <p class="text-sm text-gray-500">
+                                Der Entity Optimizer kann einen anderen LLM-Provider als die Hauptpipeline nutzen.
+                                Standard ist „Wie Hauptpipeline" — wer beides trennen will (z.B. günstigeres Modell für die Cluster-Verifikation), wählt hier explizit aus.
+                                API-Keys werden mit der Hauptpipeline geteilt (außer Gemini und Perplexity, die sind nur über den Optimizer nutzbar).
+                            </p>
+                            <div class="space-y-4">
+                                <div class="space-y-2">
+                                    <label for="optimizerAiProvider" class="text-sm font-medium">Optimizer-Provider</label>
+                                    <select id="optimizerAiProvider" name="optimizerAiProvider"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value=""           <%= !config.OPTIMIZER_AI_PROVIDER ? 'selected' : '' %>>Wie Hauptpipeline (Default)</option>
+                                        <option value="openai"     <%= config.OPTIMIZER_AI_PROVIDER === 'openai'     ? 'selected' : '' %>>OpenAI</option>
+                                        <option value="anthropic"  <%= config.OPTIMIZER_AI_PROVIDER === 'anthropic'  ? 'selected' : '' %>>Anthropic Claude</option>
+                                        <option value="gemini"     <%= config.OPTIMIZER_AI_PROVIDER === 'gemini'     ? 'selected' : '' %>>Google Gemini</option>
+                                        <option value="perplexity" <%= config.OPTIMIZER_AI_PROVIDER === 'perplexity' ? 'selected' : '' %>>Perplexity</option>
+                                        <option value="azure"      <%= config.OPTIMIZER_AI_PROVIDER === 'azure'      ? 'selected' : '' %>>Azure</option>
+                                        <option value="ollama"     <%= config.OPTIMIZER_AI_PROVIDER === 'ollama'     ? 'selected' : '' %>>Ollama</option>
+                                        <option value="custom"     <%= config.OPTIMIZER_AI_PROVIDER === 'custom'     ? 'selected' : '' %>>Custom</option>
+                                    </select>
+                                </div>
+
+                                <!-- Modell-Overrides pro Provider (nur sichtbar wenn der Provider aktiv ist) -->
+                                <div class="space-y-2 optimizer-model-row" data-provider="openai">
+                                    <label for="optimizerOpenaiModel" class="text-sm font-medium">Optimizer OpenAI Model</label>
+                                    <input type="text" id="optimizerOpenaiModel" name="optimizerOpenaiModel"
+                                           value="<%= config.OPTIMIZER_OPENAI_MODEL %>"
+                                           placeholder="leer = gpt-4o-mini"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+
+                                <div class="space-y-2 optimizer-model-row" data-provider="anthropic">
+                                    <label for="optimizerAnthropicModel" class="text-sm font-medium">Optimizer Anthropic Model</label>
+                                    <input type="text" id="optimizerAnthropicModel" name="optimizerAnthropicModel"
+                                           value="<%= config.OPTIMIZER_ANTHROPIC_MODEL %>"
+                                           placeholder="leer = claude-3-5-sonnet-latest"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+
+                                <div class="space-y-2 optimizer-model-row" data-provider="gemini">
+                                    <label for="geminiApiKey" class="text-sm font-medium">Google Gemini API Key</label>
+                                    <div class="relative">
+                                        <input type="password" id="geminiApiKey" name="geminiApiKey"
+                                               value="<%= config.GEMINI_API_KEY %>"
+                                               placeholder="AIzaSy..."
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <button type="button" class="password-toggle" data-input="geminiApiKey">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <label for="optimizerGeminiModel" class="text-sm font-medium">Optimizer Gemini Model</label>
+                                    <input type="text" id="optimizerGeminiModel" name="optimizerGeminiModel"
+                                           value="<%= config.OPTIMIZER_GEMINI_MODEL %>"
+                                           placeholder="leer = gemini-1.5-pro"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+
+                                <div class="space-y-2 optimizer-model-row" data-provider="perplexity">
+                                    <label for="perplexityApiKey" class="text-sm font-medium">Perplexity API Key</label>
+                                    <div class="relative">
+                                        <input type="password" id="perplexityApiKey" name="perplexityApiKey"
+                                               value="<%= config.PERPLEXITY_API_KEY %>"
+                                               placeholder="pplx-..."
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <button type="button" class="password-toggle" data-input="perplexityApiKey">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <label for="optimizerPerplexityModel" class="text-sm font-medium">Optimizer Perplexity Model</label>
+                                    <input type="text" id="optimizerPerplexityModel" name="optimizerPerplexityModel"
+                                           value="<%= config.OPTIMIZER_PERPLEXITY_MODEL %>"
+                                           placeholder="leer = sonar"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+                            <script>
+                              (function () {
+                                const select = document.getElementById('optimizerAiProvider');
+                                if (!select) return;
+                                const rows = document.querySelectorAll('.optimizer-model-row');
+                                function refresh() {
+                                  const v = select.value;
+                                  rows.forEach(row => {
+                                    row.style.display = (row.dataset.provider === v) ? '' : 'none';
+                                  });
+                                }
+                                select.addEventListener('change', refresh);
+                                refresh();
+                              })();
+                            </script>
+                        </section>
+
                         <!-- Advanced Settings Section -->
                         <section class="space-y-6">
                             <h2 class="text-xl font-bold flex items-center gap-2 text-primary mb-4">

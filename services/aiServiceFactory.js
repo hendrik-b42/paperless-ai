@@ -1,22 +1,17 @@
-const config = require('../config/config');
-const openaiService = require('./openaiService');
-const ollamaService = require('./ollamaService');
-const customService = require('./customService');
-const azureService = require('./azureService');
+// Factory: returns an aiPipeline configured with the active provider.
+//
+// Backward-compatible: callers (server.js, routes/documents-admin.js,
+// routes/manual.js) keep using `getService().analyzeDocument(...)` etc.
+// What used to be four singleton service classes is now one pipeline
+// orchestrator + one provider adapter — chosen by AI_PROVIDER.
+
+const aiPipeline = require('./aiPipeline');
+const providers = require('./providers');
 
 class AIServiceFactory {
   static getService() {
-    switch (config.aiProvider) {
-      case 'ollama':
-        return ollamaService;
-      case 'openai':
-      default:
-        return openaiService;
-      case 'custom':
-        return customService;
-      case 'azure':
-        return azureService;
-    }
+    const provider = providers.resolveProvider({ role: 'main' });
+    return aiPipeline.bindProvider(provider);
   }
 }
 

@@ -1,5 +1,4 @@
 // services/chatService.js
-const OpenAIService = require('./openaiService');
 const PaperlessService = require('./paperlessService');
 const config = require('../config/config');
 const fs = require('fs');
@@ -120,10 +119,7 @@ class ChatService {
       const aiProvider = process.env.AI_PROVIDER;
 
       if (aiProvider === 'openai') {
-        // Make sure OpenAIService is initialized
-        OpenAIService.initialize();
-        
-        // Always create a new client instance for this request to ensure it works
+        // Always create a new client instance for this request to ensure streaming works
         const openai = new OpenAI({
           apiKey: process.env.OPENAI_API_KEY
         });
