@@ -99,8 +99,20 @@
                     </div>
                 </div>
 
-                <!-- Custom Filters -->
+                <!-- Per-column filters -->
                 <div class="flex flex-wrap gap-4 mb-6">
+                    <div class="w-[140px]">
+                        <input type="text" id="idFilter" inputmode="numeric"
+                               placeholder="Document ID"
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="flex-1 min-w-[220px]">
+                        <input type="text" id="titleFilter"
+                               placeholder="Title contains…"
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
                     <div class="min-w-[200px]">
                         <select id="tagFilter" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">All Tags</option>
@@ -109,7 +121,7 @@
                             <% }); %>
                         </select>
                     </div>
-                    
+
                     <div class="min-w-[200px]">
                         <select id="correspondentFilter" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">All Correspondents</option>
@@ -118,6 +130,11 @@
                             <% }); %>
                         </select>
                     </div>
+
+                    <button type="button" id="clearFiltersBtn"
+                            class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                        Clear filters
+                    </button>
                 </div>
 
                 <!-- DataTable -->

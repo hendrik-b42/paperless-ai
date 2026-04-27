@@ -223,7 +223,8 @@ router.get('/api/history', async (req, res) => {
     const draw = parseInt(req.query.draw);
     const start = parseInt(req.query.start) || 0;
     const length = parseInt(req.query.length) || 10;
-    const search = req.query.search?.value || '';
+    const idFilter = (req.query.id || '').toString().trim();
+    const titleFilter = (req.query.title || '').toString().trim().toLowerCase();
     const tagFilter = req.query.tag || '';
     const correspondentFilter = req.query.correspondent || '';
 
@@ -247,43 +248,45 @@ router.get('/api/history', async (req, res) => {
         link: `${baseURL}/documents/${doc.document_id}/`
       };
     }).filter(doc => {
-      const q = search.trim().toLowerCase();
-      const matchesSearch = !q ||
-        String(doc.document_id).includes(q) ||
-        doc.title.toLowerCase().includes(q) ||
-        doc.correspondent.toLowerCase().includes(q) ||
-        doc.tags.some(tag => tag.name.toLowerCase().includes(q));
-
+      const matchesId = !idFilter || String(doc.document_id).includes(idFilter);
+      const matchesTitle = !titleFilter || doc.title.toLowerCase().includes(titleFilter);
       const matchesTag = !tagFilter || doc.tags.some(tag => tag.id === parseInt(tagFilter));
       const matchesCorrespondent = !correspondentFilter || doc.correspondent === correspondentFilter;
-
-      return matchesSearch && matchesTag && matchesCorrespondent;
+      return matchesId && matchesTitle && matchesTag && matchesCorrespondent;
     });
 
-    if (req.query.order) {
-      const order = req.query.order[0];
-      const column = req.query.columns[order.column].data;
-      const dir = order.dir === 'asc' ? 1 : -1;
+    if (req.query.order && req.query.columns) {
+      const order = Array.isArray(req.query.order) ? req.query.order[0] : req.query.order;
+      const colIdx = parseInt(order?.column);
+      const colDef = !Number.isNaN(colIdx) ? req.query.columns[colIdx] : null;
+      const column = colDef?.data;
+      const dir = order?.dir === 'asc' ? 1 : -1;
 
-      filteredDocs.sort((a, b) => {
-        if (a[column] == null) return 1;
-        if (b[column] == null) return -1;
-        if (column === 'created_at') {
-          return dir * (new Date(a[column]) - new Date(b[column]));
-        }
-        if (column === 'document_id') {
-          return dir * (a[column] - b[column]);
-        }
-        if (column === 'tags') {
-          let min_len = (a[column].length < b[column].length) ? a[column].length : b[column].length;
-          for (let i = 0; i < min_len; i += 1) {
-            let cmp = a[column][i].name.localeCompare(b[column][i].name);
-            if (cmp !== 0) return dir * cmp;
+      if (column && column !== 'null') {
+        filteredDocs.sort((a, b) => {
+          const va = a[column];
+          const vb = b[column];
+          // null/undefined go to the bottom regardless of direction
+          if (va == null && vb == null) return 0;
+          if (va == null) return 1;
+          if (vb == null) return -1;
+          if (column === 'created_at') {
+            return dir * (new Date(va) - new Date(vb));
           }
-          return dir * (a[column].length - b[column].length);
-        }
-        return dir * a[column].localeCompare(b[column]);
-      });
+          if (column === 'document_id') {
+            return dir * (Number(va) - Number(vb));
+          }
+          if (column === 'tags') {
+            const minLen = Math.min(va.length, vb.length);
+            for (let i = 0; i < minLen; i += 1) {
+              const cmp = va[i].name.localeCompare(vb[i].name);
+              if (cmp !== 0) return dir * cmp;
+            }
+            return dir * (va.length - vb.length);
+          }
+          return dir * String(va).localeCompare(String(vb));
+        });
+      }
     }
 
     res.json({

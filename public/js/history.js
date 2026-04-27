@@ -48,9 +48,12 @@ class HistoryManager {
         return $('#historyTable').DataTable({
             serverSide: true,
             processing: true,
+            searching: false,
             ajax: {
                 url: '/api/history',
                 data: (d) => {
+                    d.id = $('#idFilter').val();
+                    d.title = $('#titleFilter').val();
                     d.tag = $('#tagFilter').val();
                     d.correspondent = $('#correspondentFilter').val();
                 }
@@ -122,10 +125,8 @@ class HistoryManager {
             ],
             order: [[2, 'desc']],
             pageLength: 10,
-            dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"<"flex-1"f><"flex-none"l>>rtip',
+            dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"<"flex-none"l>>rtip',
             language: {
-                search: "Search:",
-                searchPlaceholder: "Title, correspondent, tag, or document ID",
                 lengthMenu: "Show _MENU_ entries",
                 info: "Showing _START_ to _END_ of _TOTAL_ documents",
                 infoEmpty: "Showing 0 to 0 of 0 documents",
@@ -204,8 +205,25 @@ class HistoryManager {
     }
 
     initializeFilters() {
+        // Dropdowns reload immediately
         $('#tagFilter, #correspondentFilter').on('change', () => {
-            this.table.ajax.reload();
+            this.table.ajax.reload(null, false);
+        });
+
+        // Text inputs are debounced so we don't fire a request per keystroke
+        let debounceTimer = null;
+        const debouncedReload = () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => this.table.ajax.reload(null, false), 300);
+        };
+        $('#idFilter, #titleFilter').on('input', debouncedReload);
+
+        $('#clearFiltersBtn').on('click', () => {
+            $('#idFilter').val('');
+            $('#titleFilter').val('');
+            $('#tagFilter').val('');
+            $('#correspondentFilter').val('');
+            this.table.ajax.reload(null, false);
         });
     }
 
