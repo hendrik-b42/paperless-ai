@@ -70,8 +70,11 @@ class HistoryManager {
                     data: 'title',
                     render: (data, type, row) => {
                         if (type === 'display') {
+                            const title = data
+                                ? data
+                                : '<span class="text-gray-400">(no title)</span>';
                             return `
-                                <div class="font-medium">${data}</div>
+                                <div class="font-medium">${title}</div>
                                 <div class="text-xs text-gray-500">Modified: ${new Date(row.created_at).toLocaleString()}</div>
                             `;
                         }
@@ -90,7 +93,15 @@ class HistoryManager {
                         return data?.map(t => t.name).join(', ') || '';
                     }
                 },
-                { data: 'correspondent' },
+                {
+                    data: 'correspondent',
+                    render: (data, type) => {
+                        if (type === 'display') {
+                            return data || '<span class="text-gray-400">(not assigned)</span>';
+                        }
+                        return data;
+                    }
+                },
                 {
                     data: null,
                     render: (data) => `
@@ -113,7 +124,8 @@ class HistoryManager {
             pageLength: 10,
             dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"<"flex-1"f><"flex-none"l>>rtip',
             language: {
-                search: "Search documents:",
+                search: "Search:",
+                searchPlaceholder: "Title, correspondent, tag, or document ID",
                 lengthMenu: "Show _MENU_ entries",
                 info: "Showing _START_ to _END_ of _TOTAL_ documents",
                 infoEmpty: "Showing 0 to 0 of 0 documents",

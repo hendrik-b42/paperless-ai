@@ -240,17 +240,19 @@ router.get('/api/history', async (req, res) => {
 
       return {
         document_id: doc.document_id,
-        title: doc.title || 'Modified: Invalid Date',
+        title: doc.title || '',
         created_at: doc.created_at,
         tags: resolvedTags,
-        correspondent: doc.correspondent || 'Not assigned',
+        correspondent: doc.correspondent || '',
         link: `${baseURL}/documents/${doc.document_id}/`
       };
     }).filter(doc => {
-      const matchesSearch = !search ||
-        doc.title.toLowerCase().includes(search.toLowerCase()) ||
-        doc.correspondent.toLowerCase().includes(search.toLowerCase()) ||
-        doc.tags.some(tag => tag.name.toLowerCase().includes(search.toLowerCase()));
+      const q = search.trim().toLowerCase();
+      const matchesSearch = !q ||
+        String(doc.document_id).includes(q) ||
+        doc.title.toLowerCase().includes(q) ||
+        doc.correspondent.toLowerCase().includes(q) ||
+        doc.tags.some(tag => tag.name.toLowerCase().includes(q));
 
       const matchesTag = !tagFilter || doc.tags.some(tag => tag.id === parseInt(tagFilter));
       const matchesCorrespondent = !correspondentFilter || doc.correspondent === correspondentFilter;
